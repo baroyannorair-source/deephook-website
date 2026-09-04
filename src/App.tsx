@@ -1035,7 +1035,7 @@ export default function App() {
               { label: 'Instagram', url: 'https://www.instagram.com/deephook.agency/' },
               { label: 'Facebook', url: 'https://www.facebook.com/people/DeepHook/61590312493042/' },
               { label: 'YouTube', url: 'https://www.youtube.com/@DeephookAgency' },
-              { label: 'Behance', url: 'https://www.behance.net/Zenoma_Marketing' },
+              { label: 'Behance', url: 'https://www.behance.net/Deephook_Agency' },
             ].map((social) => (
               <a
                 key={social.label}
