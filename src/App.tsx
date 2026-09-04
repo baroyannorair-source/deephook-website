@@ -1021,7 +1021,7 @@ export default function App() {
             onClick={() => setIsChatOpen(true)}
             style={{ background: '#fff', color: '#000', padding: isMobile ? '8px 14px' : '10px 20px', borderRadius: '9999px', fontWeight: 500, fontSize: '0.8rem', cursor: 'pointer', border: 'none' }}
           >
-            INQUIRE
+            Message Us
           </button>
         </div>
       </header>
