@@ -1002,11 +1002,11 @@ export default function App() {
       )}
 
       <header style={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '16px 20px' : '24px 32px', pointerEvents: 'none', boxSizing: 'border-box' }}>
-      <a 
+     <a 
       href="#" 
       onClick={(e) => {
         e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.location.href = '/';
       }}
     >
   <img
