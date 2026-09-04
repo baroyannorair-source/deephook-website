@@ -1002,11 +1002,19 @@ export default function App() {
       )}
 
       <header style={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '16px 20px' : '24px 32px', pointerEvents: 'none', boxSizing: 'border-box' }}>
-        <img 
-          src="/images/deephook-logo.png" 
-          alt="Deephook Logo" 
-          style={{ height: isMobile ? '22px' : '28px', objectFit: 'contain', pointerEvents: 'auto' }} 
-        />
+        <<a 
+  href="#" 
+  onClick={(e) => { 
+    e.preventDefault(); 
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+  }}
+>
+  <img
+    src="/images/deephook-logo.png"
+    alt="Deephook Logo"
+    style={{ height: isMobile ? '22px' : '28px', objectFit: 'contain', pointerEvents: 'auto', cursor: 'pointer' }}
+  />
+</a>>
         
         <div style={{ pointerEvents: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
           {isMobile && (
