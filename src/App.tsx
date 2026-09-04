@@ -244,12 +244,13 @@ export default function App() {
 
   React.useEffect(() => {
     if (!currentSlogan) return;
+    const sloganToType = currentSlogan;
     let i = 0;
     setDisplaySlogan('');
     
     const timer = setInterval(() => {
-      if (i < currentSlogan.length) {
-        setDisplaySlogan((prev) => prev + currentSlogan.charAt(i));
+      if (i < sloganToType.length) {
+        setDisplaySlogan(sloganToType.substring(0, i + 1));
         i++;
       } else {
         clearInterval(timer);
