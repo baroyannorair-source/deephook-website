@@ -5,6 +5,33 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import emailjs from '@emailjs/browser';
 
+const famousSlogans = [
+  "Apple: Think different",
+  "Nike: Just do it",
+  "Panasonic: Ideas for life",
+  "Toyota: Always a better way",
+  "Adidas: Impossible is nothing",
+  "BMW: The Ultimate Driving Machine",
+  "L'Oréal: Because you're worth it",
+  "Mastercard: There are some things money can't buy.",
+  "McDonald's: I'm lovin' it",
+  "Disney: The happiest place on Earth",
+  "Nike: Find your greatness",
+  "KFC: Finger lickin' good",
+  "Skittles: Taste the rainbow",
+  "M&M's: Melts in your mouth, not in your hands",
+  "Nokia: Connecting people",
+  "Gillette: The best a man can get.",
+  "Walmart: Save money. Live better.",
+  "Energizer: It keeps going and going and going",
+  "Kit Kat: Have a break, have a Kit Kat",
+  "Red Bull: Gives you wings",
+  "Mercedes-Benz: The best or nothing",
+  "Pampers: Love, sleep & play",
+  "Amazon: And you're done",
+  "SNICKERS: You're not you when you're hungry."
+];
+
 // Dataset featuring vertical rectangles and squares with descriptions, image galleries, and YouTube links
 const PORTFOLIO_WORKS = Array.from({ length: 24 }).map((_, i) => {
   const types = ['square', 'rect-v'] as const;
@@ -207,6 +234,31 @@ export default function App() {
     }
   }, []);
 
+  const [currentSlogan, setCurrentSlogan] = React.useState('');
+  const [displaySlogan, setDisplaySlogan] = React.useState('');
+
+  React.useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * famousSlogans.length);
+    setCurrentSlogan(famousSlogans[randomIndex]);
+  }, []);
+
+  React.useEffect(() => {
+    if (!currentSlogan) return;
+    let i = 0;
+    setDisplaySlogan('');
+    
+    const timer = setInterval(() => {
+      if (i < currentSlogan.length) {
+        setDisplaySlogan((prev) => prev + currentSlogan.charAt(i));
+        i++;
+      } else {
+        clearInterval(timer);
+      }
+    }, 50);
+
+    return () => clearInterval(timer);
+  }, [currentSlogan]);
+  
   const [activeView, setActiveView] = useState<string | null>(null);
   const [camTarget, setCamTarget] = useState<[number, number, number] | null>(null);
   const [currentCategory, setCurrentCategory] = useState<string>('');
@@ -493,7 +545,10 @@ export default function App() {
           background: 'rgba(0,0,0,0.4)'
         }} 
       />
-
+<div style={{ textAlign: 'center', margin: '20px auto', fontSize: '1.2rem', fontFamily: 'monospace', color: '#fff', zIndex: 2, position: 'relative' }}>
+  {displaySlogan}
+  <span style={{ opacity: 0.7 }}>|</span>
+</div>
       <div style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', zIndex: 1, display: activeView ? 'none' : 'flex', alignItems: 'flex-end', padding: isMobile ? '20px' : '32px', boxSizing: 'border-box' }}>
         <div style={{ margin: '0 auto 40px auto', textAlign: 'center', opacity: 0.7, pointerEvents: 'none' }}>
           <span style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll down for Services ↓</span>
