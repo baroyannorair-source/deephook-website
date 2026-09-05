@@ -103,7 +103,6 @@ const TEAM_MEMBERS = [
     socialUrl: 'https://www.instagram.com/ruzhovhannisyan11/'
   },
 ];
-
 function SpatialNode({ 
   position, 
   imagePath,
@@ -120,6 +119,99 @@ function SpatialNode({
   isMobile: boolean
 }) {
   const groupRef = useRef<THREE.Group>(null!);
+  const [hovered, setHovered] = useState(false);
+  useCursor(hovered);
+
+  const texture = useLoader(THREE.TextureLoader, imagePath);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  const scale = isMobile ? 0.85 : 1;
+  const boxArgs: [number, number, number] = [3.04 * scale, 3.84 * scale, 0.06];
+  const planeArgs: [number, number] = [3 * scale, 3.8 * scale];
+
+  useFrame((state) => {
+    if (groupRef.current && !isActive) {
+      const t = state.clock.getElapsedTime();
+      groupRef.current.rotation.y = Math.sin(t * 0.5 + position[0]) * 0.05;
+      groupRef.current.position.y = position[1] + Math.sin(t * 0.8 + position[0]) * 0.04;
+    }
+  });
+
+  const handlePointerOver = (e: any) => { 
+    e.stopPropagation(); 
+    setHovered(true); 
+  };
+
+  const handlePointerOut = (e: any) => { 
+    e.stopPropagation(); 
+    setHovered(false); 
+  };
+
+  const handleClick = (e: any) => {
+    e.stopPropagation();
+    onClick();
+  };
+
+  return (
+    <group ref={groupRef} position={position}>
+  
+      <RoundedBox 
+        args={boxArgs} 
+        radius={0.08} 
+        smoothness={4}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
+        <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
+      </RoundedBox>
+
+      <mesh 
+        position={[0, 0, 0.035]}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
+        <planeGeometry args={planeArgs} />
+        <meshBasicMaterial map={texture} />
+      </mesh>
+
+      <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
+        <div 
+          style={{
+            width: isMobile ? '180px' : '210px',
+            height: isMobile ? '220px' : '266px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.4)',
+            opacity: hovered ? 1 : 0,
+            transition: 'opacity 0.25s ease-in-out',
+            pointerEvents: 'none',
+            borderRadius: '4px',
+          }}
+        >
+          <span 
+            style={{
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              textAlign: 'center',
+              padding: '0 10px',
+              transform: hovered ? 'translateY(0px)' : 'translateY(8px)',
+              transition: 'transform 0.25s ease-in-out',
+            }}
+          >
+            {category}
+          </span>
+        </div>
+      </Html>
+    </group>
+  );
+}
+```[cite: 4]
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
 
