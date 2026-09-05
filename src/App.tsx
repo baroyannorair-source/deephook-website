@@ -141,7 +141,12 @@ function SpatialNode({
   return (
     <group ref={groupRef} position={position}>
   
-      <RoundedBox args={boxArgs} radius={0.08} smoothness={4}>
+      <RoundedBox 
+        args={boxArgs} 
+        radius={0.08} 
+        smoothness={4}
+        raycast={() => null}
+      >
         <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
       </RoundedBox>
       <mesh 
@@ -157,7 +162,7 @@ function SpatialNode({
         <meshBasicMaterial map={texture} />
       </mesh>
 
-      <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]}>
+      <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
         <div 
           style={{
             width: isMobile ? '180px' : '210px',
