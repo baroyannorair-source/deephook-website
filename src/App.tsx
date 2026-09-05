@@ -149,8 +149,9 @@ function SpatialNode({
       >
         <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
       </RoundedBox>
+     {/* Dedicated full-surface interactive hit plane */}
       <mesh 
-        position={[0, 0, 0.035]}
+        position={[0, 0, 0.045]}
         onClick={(e) => {
           e.stopPropagation();
           onClick();
@@ -159,7 +160,7 @@ function SpatialNode({
         onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
       >
         <planeGeometry args={planeArgs} />
-        <meshBasicMaterial map={texture} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
       <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
