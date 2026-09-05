@@ -154,7 +154,7 @@ function SpatialNode({
 
   return (
     <group ref={groupRef} position={position}>
-  
+      {/* Clickable 3D Frame Box */}
       <RoundedBox 
         args={boxArgs} 
         radius={0.08} 
@@ -166,6 +166,7 @@ function SpatialNode({
         <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
+      {/* Clickable Image Plane */}
       <mesh 
         position={[0, 0, 0.035]}
         onClick={handleClick}
@@ -175,6 +176,43 @@ function SpatialNode({
         <planeGeometry args={planeArgs} />
         <meshBasicMaterial map={texture} />
       </mesh>
+
+      {/* Non-blocking visual hover overlay */}
+      <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
+        <div 
+          style={{
+            width: isMobile ? '180px' : '210px',
+            height: isMobile ? '220px' : '266px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.4)',
+            opacity: hovered ? 1 : 0,
+            transition: 'opacity 0.25s ease-in-out',
+            pointerEvents: 'none',
+            borderRadius: '4px',
+          }}
+        >
+          <span 
+            style={{
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              textAlign: 'center',
+              padding: '0 10px',
+              transform: hovered ? 'translateY(0px)' : 'translateY(8px)',
+              transition: 'transform 0.25s ease-in-out',
+            }}
+          >
+            {category}
+          </span>
+        </div>
+      </Html>
+    </group>
+  );
+}
 
       <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
         <div 
