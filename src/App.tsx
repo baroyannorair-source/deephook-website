@@ -141,21 +141,25 @@ function SpatialNode({
   return (
     <group ref={groupRef} position={position}>
   
-      <RoundedBox 
-        args={boxArgs} 
-        radius={0.08} 
-        smoothness={4}
+      <RoundedBox args={boxArgs} radius={0.08} smoothness={4}>
+        <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
+      </RoundedBox>
+
+      <mesh 
+        position={[0, 0, 0.035]}
         onClick={(e) => {
           e.stopPropagation();
           onClick();
         }}
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
-        onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
+        onPointerOver={(e) => { 
+          e.stopPropagation(); 
+          setHovered(true); 
+        }}
+        onPointerOut={(e) => { 
+          e.stopPropagation(); 
+          setHovered(false); 
+        }}
       >
-        <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
-      </RoundedBox>
-
-      <mesh position={[0, 0, 0.035]}>
         <planeGeometry args={planeArgs} />
         <meshBasicMaterial map={texture} />
       </mesh>
