@@ -568,50 +568,42 @@ export default function App() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div style={{ position: 'absolute', top: isMobile ? '75px' : '90px', width: '100%', textAlign: 'center', pointerEvents: 'none', zIndex: 5, padding: '0 16px', boxSizing: 'border-box' }}>
-          <h2 style={{ color: '#fff', fontSize: isMobile ? '1.2rem' : '1.4rem', fontWeight: 300, letterSpacing: '0.25em', textTransform: 'uppercase', margin: 0 }}>
-            Our Services
-          </h2>
-          <span style={{ color: '#888', fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-            {isMobile ? 'Swipe left/right to browse categories' : 'Interactive Portfolio'}
-          </span>
-        </div>
+        <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', zIndex: 2 }}>
+  <Canvas camera={{ position: [0, 0, isMobile ? 10 : isTablet ? 9.5 : 8], fov: 50 }} gl={{ alpha: true }}>
+    <ambientLight intensity={1.8} />
+    <directionalLight position={[10, 10, 5]} intensity={2} />
+    <pointLight position={[-10, -10, -5]} intensity={1.5} />
+    
+    <CameraController targetPosition={camTarget} isMobile={isMobile} isTablet={isTablet} />
 
-        <Canvas camera={{ position: [0, 0, isMobile ? 10 : isTablet ? 9.5 : 8], fov: 50 }} gl={{ alpha: true }}>
-          <ambientLight intensity={1.8} />
-          <directionalLight position={[10, 10, 5]} intensity={2} />
-          <pointLight position={[-10, -10, -5]} intensity={1.5} />
-          
-          <CameraController targetPosition={camTarget} isMobile={isMobile} isTablet={isTablet} />
+    <SpatialNode 
+      position={nodePositions.social} 
+      imagePath="/images/deephook_Shopper.jpg" 
+      category="Social Media"
+      isActive={activeView === 'shopper'} 
+      onClick={() => handleNodeClick('shopper', 'Social Media', nodePositions.social)} 
+      isMobile={isMobile}
+    />
 
-          <SpatialNode 
-            position={nodePositions.social} 
-            imagePath="/images/deephook_Shopper.jpg" 
-            category="Social Media"
-            isActive={activeView === 'shopper'} 
-            onClick={() => handleNodeClick('shopper', 'Social Media', nodePositions.social)} 
-            isMobile={isMobile}
-          />
+    <SpatialNode 
+      position={nodePositions.branding} 
+      imagePath="/images/Pen.jpg" 
+      category="Branding & Printing"
+      isActive={activeView === 'pen'} 
+      onClick={() => handleNodeClick('pen', 'Branding & Printing', nodePositions.branding)} 
+      isMobile={isMobile}
+    />
 
-          <SpatialNode 
-            position={nodePositions.branding} 
-            imagePath="/images/Pen.jpg" 
-            category="Branding & Printing"
-            isActive={activeView === 'pen'} 
-            onClick={() => handleNodeClick('pen', 'Branding & Printing', nodePositions.branding)} 
-            isMobile={isMobile}
-          />
-
-          <SpatialNode 
-            position={nodePositions.media} 
-            imagePath="/images/Stationary.jpg" 
-            category="Media Production"
-            isActive={activeView === 'merch'} 
-            onClick={() => handleNodeClick('merch', 'Media Production', nodePositions.media)} 
-            isMobile={isMobile}
-          />
-        </Canvas>
-
+    <SpatialNode 
+      position={nodePositions.media} 
+      imagePath="/images/Stationary.jpg" 
+      category="Media Production"
+      isActive={activeView === 'merch'} 
+      onClick={() => handleNodeClick('merch', 'Media Production', nodePositions.media)} 
+      isMobile={isMobile}
+    />
+  </Canvas>
+</div>
         {isMobile && (
           <div style={{ position: 'absolute', bottom: '60px', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 5, pointerEvents: 'none' }}>
             {[0, 1, 2].map((idx) => (
