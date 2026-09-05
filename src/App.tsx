@@ -546,7 +546,7 @@ export default function App() {
           background: 'rgba(0,0,0,0.4)'
         }} 
       />
-<div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', fontSize: '0.9rem', fontFamily: 'monospace', color: '#fff', zIndex: 10, letterSpacing: '2px', textTransform: 'uppercase', pointerEvents: 'none' }}>
+<div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', fontSize: '2rem', fontWeight: 'bold', fontFamily: 'monospace', color: '#fff', zIndex: 10, letterSpacing: '2px', textTransform: 'uppercase', pointerEvents: 'none' }}>
   {displaySlogan}
   <span style={{ opacity: 0.7 }}>|</span>
 </div>
