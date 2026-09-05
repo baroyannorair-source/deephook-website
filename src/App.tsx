@@ -137,47 +137,29 @@ function SpatialNode({
     }
   });
 
-  const handlePointerOver = (e: any) => { 
-    e.stopPropagation(); 
-    setHovered(true); 
-  };
-
-  const handlePointerOut = (e: any) => { 
-    e.stopPropagation(); 
-    setHovered(false); 
-  };
-
-  const handleClick = (e: any) => {
-    e.stopPropagation();
-    onClick();
-  };
-
   return (
     <group ref={groupRef} position={position}>
-      {/* Clickable 3D Frame Box */}
       <RoundedBox 
         args={boxArgs} 
         radius={0.08} 
         smoothness={4}
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
+        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+        onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
       >
         <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
-      {/* Clickable Image Plane */}
       <mesh 
         position={[0, 0, 0.035]}
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
+        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+        onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
       >
         <planeGeometry args={planeArgs} />
         <meshBasicMaterial map={texture} />
       </mesh>
 
-      {/* Non-blocking visual hover overlay */}
       <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
         <div 
           style={{
@@ -213,7 +195,6 @@ function SpatialNode({
     </group>
   );
 }
-
       <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
         <div 
           style={{
