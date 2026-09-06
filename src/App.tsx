@@ -569,12 +569,15 @@ export default function App() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', zIndex: 2 }}>
-  <Canvas camera={{ position: [0, 0, isMobile ? 10 : isTablet ? 9.5 : 8], fov: 50 }} gl={{ alpha: true }}>
+        <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+  <Canvas 
+    camera={{ position: [0, 0, isMobile ? 10 : isTablet ? 9.5 : 8], fov: 50 }} 
+    gl={{ alpha: true }}
+  >
     <ambientLight intensity={1.8} />
     <directionalLight position={[10, 10, 5]} intensity={2} />
     <pointLight position={[-10, -10, -5]} intensity={1.5} />
-    
+
     <CameraController targetPosition={camTarget} isMobile={isMobile} isTablet={isTablet} />
 
     <SpatialNode 
