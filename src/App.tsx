@@ -169,8 +169,8 @@ return (
       <Html position={[0, 0, 0.045]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
         <div 
           style={{
-            width: isMobile ? '180px' : '210px',
-            height: isMobile ? '220px' : '266px',
+            width: isMobile ? '380px' : '310px',
+            height: isMobile ? '320px' : '366px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
