@@ -624,7 +624,9 @@ export default function App() {
           />
         ))}
       </div>
-    )}
+    )} </div>
+        );
+        }
 
     <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', opacity: 0.7 }}>
       <span style={{ color: '#fff', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll for Team &larr;&rarr;</span>
