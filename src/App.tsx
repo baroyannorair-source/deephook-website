@@ -141,25 +141,23 @@ function SpatialNode({
   const handlePointerOut = (e: any) => { e.stopPropagation(); setHovered(false); };
   const handleClick = (e: any) => { e.stopPropagation(); onClick(); };
 
-  return (
-    <group ref={groupRef} position={position}>
+return (
+    <group 
+      ref={groupRef} 
+      position={position}
+      onClick={handleClick}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+    >
       <RoundedBox 
         args={boxArgs} 
         radius={0.08} 
         smoothness={4}
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
       >
         <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
-      <mesh 
-        position={[0, 0, 0.035]}
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-      >
+      <mesh position={[0, 0, 0.035]}>
         <planeGeometry args={planeArgs} />
         <meshBasicMaterial map={texture} />
       </mesh>
@@ -198,7 +196,6 @@ function SpatialNode({
       </Html>
     </group>
   );
-}
      
 function CameraController({ targetPosition, isMobile, isTablet }: { targetPosition: [number, number, number] | null, isMobile: boolean, isTablet: boolean }) {
   const { camera } = useThree();
