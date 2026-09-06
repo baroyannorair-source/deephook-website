@@ -127,14 +127,16 @@ function SpatialNode({
   texture.colorSpace = THREE.SRGBColorSpace;
 
   const scale = isMobile ? 0.85 : 1;
-  const boxArgs: [number, number, number] = [3.04 * scale, 3.84 * scale, 0.06];
-  const planeArgs: [number, number] = [3 * scale, 3.8 * scale];
+  // 3:4 aspect ratio dimensions
+  const boxArgs: [number, number, number] = [3.0 * scale, 4.0 * scale, 0.06];
+  const planeArgs: [number, number] = [2.88 * scale, 3.88 * scale];
 
   useFrame((state) => {
     if (groupRef.current && !isActive) {
       const t = state.clock.getElapsedTime();
-      groupRef.current.rotation.y = Math.sin(t * 0.5 + position[0]) * 0.05;
-      groupRef.current.position.y = position[1] + Math.sin(t * 0.8 + position[0]) * 0.04;
+      // Floating animation effect
+      groupRef.current.position.y = position[1] + Math.sin(t * 1.5 + position[0]) * 0.12;
+      groupRef.current.rotation.y = Math.sin(t * 0.8 + position[0]) * 0.04;
     }
   });
 
@@ -146,7 +148,7 @@ function SpatialNode({
     <group ref={groupRef} position={position}>
       {/* 1. Base 3D Box */}
       <RoundedBox args={boxArgs} radius={0.08} smoothness={4}>
-        <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
+        <meshStandardMaterial color="#222" roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
       {/* 2. Visual Image Mesh */}
@@ -155,9 +157,15 @@ function SpatialNode({
         <meshBasicMaterial map={texture} />
       </mesh>
 
-      {/* 3. Dedicated Transparent Hit Plane */}
+      {/* 3. Red Overlay Matching Full Size on Hover */}
+      <mesh position={[0, 0, 0.04]}>
+        <planeGeometry args={planeArgs} />
+        <meshBasicMaterial color="#ff1e1e" transparent opacity={hovered ? 0.88 : 0} />
+      </mesh>
+
+      {/* 4. Dedicated Transparent Hit Plane for Clicking */}
       <mesh 
-        position={[0, 0, 0.04]}
+        position={[0, 0, 0.045]}
         onClick={handleClick}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
@@ -166,16 +174,15 @@ function SpatialNode({
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* 4. HTML Hover Overlay */}
-      <Html position={[0, 0, 0.045]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
+      {/* 5. HTML Category Name Overlay */}
+      <Html position={[0, 0, 0.05]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
         <div 
           style={{
-            width: isMobile ? '380px' : '310px',
-            height: isMobile ? '320px' : '366px',
+            width: isMobile ? '340px' : '288px',
+            height: isMobile ? '400px' : '388px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(0, 0, 0, 0.4)',
             opacity: hovered ? 1 : 0,
             transition: 'opacity 0.25s ease-in-out',
             pointerEvents: 'none',
@@ -185,13 +192,14 @@ function SpatialNode({
           <span 
             style={{
               color: '#fff',
-              fontSize: '11px',
-              fontWeight: 600,
-              letterSpacing: '0.2em',
+              fontSize: '15px',
+              fontWeight: 700,
+              letterSpacing: '0.25em',
               textTransform: 'uppercase',
               textAlign: 'center',
-              padding: '0 10px',
-              transform: hovered ? 'translateY(0px)' : 'translateY(8px)',
+              padding: '0 16px',
+              textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+              transform: hovered ? 'translateY(0px)' : 'translateY(10px)',
               transition: 'transform 0.25s ease-in-out',
             }}
           >
@@ -485,9 +493,9 @@ export default function App() {
   };
 
   const nodePositions: Record<string, [number, number, number]> = {
-    social: isMobile ? [ (0 - carouselIndex) * 4.5, 0, 0 ] : [-3.5, 0, 0],
+    social: isMobile ? [ (0 - carouselIndex) * 4.5, 0, 0 ] : [-3.8, 0, 0],
     branding: isMobile ? [ (1 - carouselIndex) * 4.5, 0, 0 ] : [0, 0, 0],
-    media: isMobile ? [ (2 - carouselIndex) * 4.5, 0, 0 ] : [3.5, 0, 0]
+    media: isMobile ? [ (2 - carouselIndex) * 4.5, 0, 0 ] : [3.8, 0, 0]
   };
 
   if (isNotFound) {
@@ -557,3 +565,278 @@ export default function App() {
         {displaySlogan}
         <span style={{ opacity: 0.7 }}>|</span>
       </div>
+
+      <div style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', zIndex: 1, display: activeView ? 'none' : 'flex', alignItems: 'flex-end', padding: isMobile ? '20px' : '32px', boxSizing: 'border-box' }}>
+        <div style={{ margin: '0 auto 40px auto', textAlign: 'center', opacity: 0.7, pointerEvents: 'none' }}>
+          <span style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll down for Services ↓</span>
+        </div>
+      </div>
+
+      <div 
+        style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', zIndex: 1, display: activeView ? 'none' : 'block', touchAction: 'pan-y' }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+          <Canvas 
+            camera={{ position: [0, 0, isMobile ? 10 : isTablet ? 9.5 : 8], fov: 50 }} 
+            gl={{ alpha: true }}
+          >
+            <ambientLight intensity={1.8} />
+            <directionalLight position={[10, 10, 5]} intensity={2} />
+            <pointLight position={[-10, -10, -5]} intensity={1.5} />
+
+            <CameraController targetPosition={camTarget} isMobile={isMobile} isTablet={isTablet} />
+
+            <SpatialNode 
+              position={nodePositions.social} 
+              imagePath="/images/deephook_Shopper.jpg" 
+              category="Social Media"
+              isActive={activeView === 'shopper'} 
+              onClick={() => handleNodeClick('shopper', 'Social Media', nodePositions.social)} 
+              isMobile={isMobile}
+            />
+
+            <SpatialNode 
+              position={nodePositions.branding} 
+              imagePath="/images/Pen.jpg" 
+              category="Branding & Printing"
+              isActive={activeView === 'pen'} 
+              onClick={() => handleNodeClick('pen', 'Branding & Printing', nodePositions.branding)} 
+              isMobile={isMobile}
+            />
+
+            <SpatialNode 
+              position={nodePositions.media} 
+              imagePath="/images/Stationary.jpg" 
+              category="Media Production"
+              isActive={activeView === 'merch'} 
+              onClick={() => handleNodeClick('merch', 'Media Production', nodePositions.media)} 
+              isMobile={isMobile}
+            />
+          </Canvas>
+
+          {isMobile && (
+            <div style={{ position: 'absolute', bottom: '60px', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 5, pointerEvents: 'none' }}>
+              {[0, 1, 2].map((idx) => (
+                <div 
+                  key={idx}
+                  style={{
+                    width: carouselIndex === idx ? '24px' : '6px',
+                    height: '6px',
+                    borderRadius: '3px',
+                    background: carouselIndex === idx ? '#fff' : 'rgba(255,255,255,0.3)',
+                    transition: 'all 0.3s ease',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', opacity: 0.7 }}>
+            <span style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll for Team ↓</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', zIndex: 1, display: activeView ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '20px' : '40px', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: '1200px', width: '100%' }}>
+          <h2 style={{ color: '#fff', fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 300, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'center' }}>
+            Meet The Team
+          </h2>
+          <p style={{ color: '#aaa', fontSize: '0.8rem', letterSpacing: '0.1em', textAlign: 'center', marginBottom: '8px' }}>
+            The creative minds behind Deephook Agency
+          </p>
+          <p style={{ color: '#666', fontSize: '0.7rem', letterSpacing: '0.05em', textAlign: 'center', marginBottom: '24px', fontStyle: 'italic' }}>
+            Click any card to flip and view direct contact info
+          </p>
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', 
+            gap: '20px',
+            maxHeight: isMobile ? '60vh' : 'auto',
+            overflowY: isMobile ? 'auto' : 'visible',
+            paddingBottom: isMobile ? '20px' : '0'
+          }}>
+            {TEAM_MEMBERS.map((member) => {
+              const isFlipped = !!flippedCards[member.id];
+              return (
+                <div
+                  key={member.id}
+                  onClick={() => handleCardFlip(member.id)}
+                  style={{
+                    perspective: '1000px',
+                    height: isMobile ? '340px' : '380px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
+                      transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
+                      transformStyle: 'preserve-3d',
+                      transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backfaceVisibility: 'hidden',
+                        background: 'rgba(0, 0, 0, 0.35)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        backdropFilter: 'blur(8px)',
+                        borderRadius: '8px',
+                        padding: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <img 
+                        src={member.image} 
+                        alt={member.name} 
+                        style={{ width: isMobile ? '72px' : '100px', height: isMobile ? '72px' : '100px', borderRadius: '50%', objectFit: 'cover', marginBottom: '14px', border: '2px solid rgba(255,255,255,0.2)' }} 
+                      />
+                      <h3 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '4px' }}>
+                        {member.name}
+                      </h3>
+                      <span style={{ color: '#ccc', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '8px' }}>
+                        {member.role}
+                      </span>
+                      <p style={{ color: '#aaa', fontSize: '0.7rem', lineHeight: '1.4', margin: 0, marginBottom: '10px' }}>
+                        {member.bio}
+                      </p>
+                      <span style={{ fontSize: '10px', color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px', width: '100%' }}>
+                        Click to view contact →
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backfaceVisibility: 'hidden',
+                        background: 'rgba(20, 20, 20, 0.85)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(12px)',
+                        borderRadius: '8px',
+                        padding: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        transform: 'rotateY(180deg)',
+                      }}
+                    >
+                      <img 
+                        src={member.image} 
+                        alt={member.name} 
+                        style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px', border: '2px solid rgba(255,255,255,0.2)' }} 
+                      />
+                      <h3 style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '2px' }}>
+                        {member.name}
+                      </h3>
+                      <span style={{ color: '#aaa', fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>
+                        Direct Contact Info
+                      </span>
+
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left', background: 'rgba(0,0,0,0.4)', padding: '10px', borderRadius: '6px' }}>
+                        <div>
+                          <span style={{ display: 'block', fontSize: '8px', color: '#777', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Email</span>
+                          <a href={`mailto:${member.email}`} style={{ fontSize: '10px', color: '#fff', wordBreak: 'break-all', textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}>
+                            {member.email}
+                          </a>
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', fontSize: '8px', color: '#777', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Phone</span>
+                          <a href={`tel:${member.phone}`} style={{ fontSize: '10px', color: '#fff', textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}>
+                            {member.phone}
+                          </a>
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', fontSize: '8px', color: '#777', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Social Profile</span>
+                          <a 
+                            href={member.socialUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            style={{
+                              display: 'inline-block',
+                              background: '#1a1a1a',
+                              border: '1px solid #333333',
+                              color: '#ffffff',
+                              padding: '4px 10px',
+                              borderRadius: '4px',
+                              fontSize: '10px',
+                              fontWeight: 500,
+                              textDecoration: 'none',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {member.socialPlatform} ↗
+                          </a>
+                        </div>
+                      </div>
+
+                      <span style={{ fontSize: '9px', color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '10px' }}>
+                        ← Click to flip back
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {activeView && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10,
+            overflowY: 'auto',
+            padding: isMobile ? '80px 16px 32px 16px' : '90px 32px 48px 32px',
+            background: '#0c0c0c',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', maxWidth: '1600px', margin: '0 auto 20px auto', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button 
+                onClick={() => {
+                  setSelectedTag('All');
+                  setSearchQuery('');
+                  handleBackToSpatial();
+                }}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#fff',
+                  padding: '8px 16px',
+                  borderRadius: '99px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  letterSpacing: '0.05em'
+                }}
+              >
+                ← Back
+              </button>
+              <h2 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 400, margin: 0, letterSpacing: '0.1em' }}>
+                {currentCategory} Works
+              </h2>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
