@@ -198,8 +198,9 @@ return (
           </span>
         </div>
       </Html>
-    </group>
+   </group>
   );
+};
      
 function CameraController({ targetPosition, isMobile, isTablet }: { targetPosition: [number, number, number] | null, isMobile: boolean, isTablet: boolean }) {
   const { camera } = useThree();
