@@ -32,8 +32,8 @@ const famousSlogans = [
   "SNICKERS: You're not you when you're hungry."
 ];
 
-// Dataset featuring vertical rectangles and squares with descriptions, image galleries, and YouTube links
-const PORTFOLIO_WORKS = Array.from({ length: 24 }).map((_, i) => {
+// Default initial dataset
+const INITIAL_WORKS = Array.from({ length: 24 }).map((_, i) => {
   const types = ['square', 'rect-v'] as const;
   const type = types[i % types.length];
   const tagList = ['Banner', 'Logo', 'Sticker', 'Flyer', 'Brand Identity'];
@@ -56,7 +56,6 @@ const PORTFOLIO_WORKS = Array.from({ length: 24 }).map((_, i) => {
   };
 });
 
-// Mock Team Members Data with individual contact details and explicit social platforms
 const TEAM_MEMBERS = [
   { 
     id: 1, 
@@ -103,6 +102,7 @@ const TEAM_MEMBERS = [
     socialUrl: 'https://www.instagram.com/ruzhovhannisyan11/'
   },
 ];
+
 function SpatialNode({ 
   position, 
   imagePath,
@@ -137,28 +137,26 @@ function SpatialNode({
     }
   });
 
-  const handlePointerOver = (e: any) => { e.stopPropagation(); setHovered(true); };
-  const handlePointerOut = (e: any) => { e.stopPropagation(); setHovered(false); };
-  const handleClick = (e: any) => { e.stopPropagation(); onClick(); };
-
   return (
     <group ref={groupRef} position={position}>
-      <RoundedBox 
-        args={boxArgs} 
-        radius={0.08} 
-        smoothness={4}
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-      >
+      <RoundedBox args={boxArgs} radius={0.08} smoothness={4}>
         <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
       <mesh 
         position={[0, 0, 0.035]}
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        onPointerOver={(e) => { 
+          e.stopPropagation(); 
+          setHovered(true); 
+        }}
+        onPointerOut={(e) => { 
+          e.stopPropagation(); 
+          setHovered(false); 
+        }}
       >
         <planeGeometry args={planeArgs} />
         <meshBasicMaterial map={texture} />
@@ -199,7 +197,7 @@ function SpatialNode({
     </group>
   );
 }
-     
+
 function CameraController({ targetPosition, isMobile, isTablet }: { targetPosition: [number, number, number] | null, isMobile: boolean, isTablet: boolean }) {
   const { camera } = useThree();
 
@@ -228,17 +226,109 @@ function CameraController({ targetPosition, isMobile, isTablet }: { targetPositi
 }
 
 export default function App() {
-  // 404 Route state check: checks if pathname is something other than root or empty
+  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(false);
   const [isNotFound, setIsNotFound] = useState<boolean>(false);
+  const [adminLoggedIn, setAdminLoggedIn] = useState<boolean>(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState<string>('');
+
+  // Portfolio works state loaded from localStorage or fallback to INITIAL_WORKS
+  const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
+    const saved = localStorage.getItem('deephook_portfolio_works');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return INITIAL_WORKS; }
+    }
+    return INITIAL_WORKS;
+  });
+
+  // Admin New Project Form State
+  const [newTitle, setNewTitle] = useState('');
+  const [newTag, setNewTag] = useState('Banner');
+  const [newType, setNewType] = useState('square');
+  const [newImage, setNewImage] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newYoutubeUrl, setNewYoutubeUrl] = useState('https://www.youtube.com/embed/dQw4w9WgXcQ');
+  const [newGalleryInput, setNewGalleryInput] = useState('');
+  const [newGalleryList, setNewGalleryList] = useState<string[]>([]);
 
   useEffect(() => {
     const path = window.location.pathname;
-    // Define valid routes (e.g. root '/' or empty)
-    const validPaths = ['/', ''];
-    if (!validPaths.includes(path)) {
+    if (path === '/admin' || path === '/admin/') {
+      setIsAdminRoute(true);
+    } else if (!['/', ''].includes(path)) {
       setIsNotFound(true);
     }
   }, []);
+
+  const saveWorksToStorage = (updatedWorks: any[]) => {
+    setPortfolioWorks(updatedWorks);
+    localStorage.setItem('deephook_portfolio_works', JSON.stringify(updatedWorks));
+  };
+
+  const handleAddProjectSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle || !newImage) {
+      alert('Please fill in at least the Title and Main Image URL.');
+      return;
+    }
+
+    const createdProject = {
+      id: Date.now(),
+      title: newTitle,
+      type: newType,
+      tag: newTag,
+      image: newImage,
+      description: newDescription || 'No description provided.',
+      gallery: newGalleryList.length > 0 ? newGalleryList : [newImage],
+      youtubeUrl: newYoutubeUrl.includes('watch?v=') 
+        ? newYoutubeUrl.replace('watch?v=', 'embed/') 
+        : newYoutubeUrl,
+    };
+
+    const updated = [createdProject, ...portfolioWorks];
+    saveWorksToStorage(updated);
+
+    // Reset form
+    setNewTitle('');
+    setNewImage('');
+    setNewDescription('');
+    setNewGalleryList([]);
+    alert('Project successfully created and published live!');
+  };
+
+  const handleExportJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(portfolioWorks, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "deephook_projects_backup.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileReader = new FileReader();
+    if (e.target.files && e.target.files[0]) {
+      fileReader.readAsText(e.target.files[0], "UTF-8");
+      fileReader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target?.result as string);
+          if (Array.isArray(parsed)) {
+            saveWorksToStorage(parsed);
+            alert('Projects successfully imported!');
+          }
+        } catch (error) {
+          alert('Invalid JSON file format.');
+        }
+      };
+    }
+  };
+
+  const handleDeleteProject = (id: number) => {
+    if (window.confirm('Are you sure you want to delete this project?')) {
+      const updated = portfolioWorks.filter((w) => w.id !== id);
+      saveWorksToStorage(updated);
+    }
+  };
 
   const [currentSlogan, setCurrentSlogan] = React.useState('');
   const [displaySlogan, setDisplaySlogan] = React.useState('');
@@ -299,14 +389,10 @@ export default function App() {
   
   const [chatStep, setChatStep] = useState<'collect_contact' | 'chatting'>('collect_contact');
   const [contactInfo, setContactInfo] = useState<string>('');
-
   const [flippedCards, setFlippedCards] = useState<Record<number, boolean>>({});
 
   const handleCardFlip = (id: number) => {
-    setFlippedCards((prev) => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+    setFlippedCards((prev) => ({ ...prev, [id]: !prev[id] }));
   };
   
   const [messages, setMessages] = useState<Array<{ sender: 'bot' | 'user'; text: string }>>([
@@ -349,7 +435,7 @@ export default function App() {
         setMessages((prev) => [
           ...prev,
           { sender: 'user', text: userInput },
-          { sender: 'bot', text: '⚠️ Please enter a valid email address or phone number (e.g., name@example.com or +37400000000) to continue.' }
+          { sender: 'bot', text: '⚠️ Please enter a valid email address or phone number to continue.' }
         ]);
         return; 
       }
@@ -389,7 +475,7 @@ export default function App() {
       console.error('Failed to send email:', error);
       setMessages((prev) => [
         ...prev,
-        { sender: 'bot', text: 'Oops! Something went wrong while sending. Please try again or reach out via our social links.' }
+        { sender: 'bot', text: 'Oops! Something went wrong while sending. Please try again.' }
       ]);
     } finally {
       setIsSending(false);
@@ -398,31 +484,18 @@ export default function App() {
 
   const handleNodeClick = (id: string, categoryName: string, coords: [number, number, number]) => {
     setCurrentCategory(categoryName);
-    
     if (blurOverlayRef.current) {
       gsap.to(blurOverlayRef.current, {
         backdropFilter: 'blur(25px)',
         opacity: 1,
         duration: 0.5,
         ease: 'power2.inOut',
-        onStart: () => {
-          setCamTarget([coords[0], coords[1], coords[2] + 1.2]);
-        },
+        onStart: () => setCamTarget([coords[0], coords[1], coords[2] + 1.2]),
         onComplete: () => {
           setActiveView(id);
-          
-          gsap.to(blurOverlayRef.current, {
-            backdropFilter: 'blur(0px)',
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-          });
-
+          gsap.to(blurOverlayRef.current, { backdropFilter: 'blur(0px)', opacity: 0, duration: 0.6, ease: 'power2.out' });
           if (gridContainerRef.current) {
-            gsap.fromTo(gridContainerRef.current.children, 
-              { y: 30, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.5, stagger: 0.03, ease: 'power3.out' }
-            );
+            gsap.fromTo(gridContainerRef.current.children, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.03, ease: 'power3.out' });
           }
         }
       });
@@ -439,47 +512,16 @@ export default function App() {
         onComplete: () => {
           setActiveView(null);
           setCamTarget(null);
-
           if (mainScrollRef.current) {
             mainScrollRef.current.style.scrollSnapType = 'none';
             mainScrollRef.current.scrollTop = window.innerHeight;
-            
             setTimeout(() => {
-              if (mainScrollRef.current) {
-                mainScrollRef.current.style.scrollSnapType = 'y mandatory';
-              }
+              if (mainScrollRef.current) mainScrollRef.current.style.scrollSnapType = 'y mandatory';
             }, 50);
           }
-
-          gsap.to(blurOverlayRef.current, {
-            backdropFilter: 'blur(0px)',
-            opacity: 0,
-            duration: 0.5,
-            ease: 'power2.out',
-          });
+          gsap.to(blurOverlayRef.current, { backdropFilter: 'blur(0px)', opacity: 0, duration: 0.5, ease: 'power2.out' });
         }
       });
-    }
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    const threshold = 50;
-
-    if (Math.abs(diff) > threshold) {
-      if (diff > 0) {
-        setCarouselIndex((prev) => (prev + 1) % 3);
-      } else {
-        setCarouselIndex((prev) => (prev - 1 + 3) % 3);
-      }
     }
   };
 
@@ -488,6 +530,206 @@ export default function App() {
     branding: isMobile ? [ (1 - carouselIndex) * 4.5, 0, 0 ] : [0, 0, 0],
     media: isMobile ? [ (2 - carouselIndex) * 4.5, 0, 0 ] : [3.5, 0, 0]
   };
+
+  // ADMIN ROUTE RENDER
+  if (isAdminRoute) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#0a0a0a', color: '#fff', overflowY: 'auto', fontFamily: 'sans-serif', padding: '30px', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid #222', paddingBottom: '20px' }}>
+            <div>
+              <span style={{ fontSize: '10px', color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Deephook Agency CMS</span>
+              <h1 style={{ fontSize: '1.8rem', fontWeight: 400, margin: '4px 0 0 0', letterSpacing: '0.1em' }}>ADMIN PORTAL</h1>
+            </div>
+            <a href="/" style={{ background: '#222', color: '#fff', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', textDecoration: 'none' }}>
+              ← Return to Site
+            </a>
+          </div>
+
+          {!adminLoggedIn ? (
+            <div style={{ background: '#141414', border: '1px solid #222', padding: '40px', borderRadius: '8px', textAlign: 'center', maxWidth: '400px', margin: '60px auto' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', letterSpacing: '0.1em' }}>ENTER ADMIN PASSWORD</h3>
+              <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '20px' }}>Password is: <code>deephook2026</code></p>
+              <input 
+                type="password"
+                placeholder="Password..."
+                value={adminPasswordInput}
+                onChange={(e) => setAdminPasswordInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { if (adminPasswordInput === 'deephook2026') setAdminLoggedIn(true); else alert('Incorrect password'); }}}
+                style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '12px', borderRadius: '6px', color: '#fff', marginBottom: '16px', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <button 
+                onClick={() => {
+                  if (adminPasswordInput === 'deephook2026') setAdminLoggedIn(true);
+                  else alert('Incorrect password');
+                }}
+                style={{ width: '100%', background: '#fff', color: '#000', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Login
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              
+              {/* SYNC & BACKUP CONTROLS */}
+              <div style={{ background: '#141414', border: '1px solid #222', padding: '20px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '0.95rem' }}>Team Project Syncing</h4>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#888' }}>Export your JSON file to share with team members or import a backup.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={handleExportJSON} style={{ background: '#222', color: '#fff', border: '1px solid #333', padding: '8px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>
+                    Export Projects JSON ↗
+                  </button>
+                  <label style={{ background: '#fff', color: '#000', padding: '8px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                    Import JSON Backup
+                    <input type="file" accept=".json" onChange={handleImportJSON} style={{ display: 'none' }} />
+                  </label>
+                </div>
+              </div>
+
+              {/* BEHANCE-STYLE CREATOR FORM */}
+              <form onSubmit={handleAddProjectSubmit} style={{ background: '#141414', border: '1px solid #222', padding: '30px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>+ Create New Project</h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Project Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Deephook Motion Campaign" 
+                      value={newTitle} 
+                      onChange={(e) => setNewTitle(e.target.value)} 
+                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Tag Category</label>
+                    <select 
+                      value={newTag} 
+                      onChange={(e) => setNewTag(e.target.value)}
+                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
+                    >
+                      <option value="Banner">Banner</option>
+                      <option value="Logo">Logo</option>
+                      <option value="Sticker">Sticker</option>
+                      <option value="Flyer">Flyer</option>
+                      <option value="Brand Identity">Brand Identity</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Grid Shape / Layout</label>
+                    <select 
+                      value={newType} 
+                      onChange={(e) => setNewType(e.target.value)}
+                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
+                    >
+                      <option value="square">Square (1x1)</option>
+                      <option value="rect-v">Vertical Rectangle (Tall 1x2)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Main Image URL (ImageKit or Direct)</label>
+                    <input 
+                      type="text" 
+                      placeholder="https://ik.imagekit.io/deephook/..." 
+                      value={newImage} 
+                      onChange={(e) => setNewImage(e.target.value)} 
+                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Project Description</label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Write detailed creative breakdown..." 
+                    value={newDescription} 
+                    onChange={(e) => setNewDescription(e.target.value)} 
+                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>YouTube Video URL (for Player inside modal)</label>
+                  <input 
+                    type="text" 
+                    placeholder="https://www.youtube.com/embed/..." 
+                    value={newYoutubeUrl} 
+                    onChange={(e) => setNewYoutubeUrl(e.target.value)} 
+                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Add Gallery Images (Paste URL and click Add)</label>
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+                    <input 
+                      type="text" 
+                      placeholder="https://ik.imagekit.io/deephook/gallery1.jpg"
+                      value={newGalleryInput}
+                      onChange={(e) => setNewGalleryInput(e.target.value)}
+                      style={{ flex: 1, background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff' }}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (newGalleryInput.trim()) {
+                          setNewGalleryList([...newGalleryList, newGalleryInput.trim()]);
+                          setNewGalleryInput('');
+                        }
+                      }}
+                      style={{ background: '#333', color: '#fff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      Add to Gallery
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {newGalleryList.map((url, idx) => (
+                      <span key={idx} style={{ background: '#222', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        Img {idx + 1}
+                        <button type="button" onClick={() => setNewGalleryList(newGalleryList.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>✕</button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <button type="submit" style={{ background: '#fff', color: '#000', border: 'none', padding: '14px', borderRadius: '6px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginTop: '10px' }}>
+                  Publish Project Live ↗
+                </button>
+              </form>
+
+              {/* EXISTING PROJECTS LIST */}
+              <div style={{ background: '#141414', border: '1px solid #222', padding: '30px', borderRadius: '8px' }}>
+                <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', letterSpacing: '0.1em' }}>Manage Existing Works ({portfolioWorks.length})</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto' }}>
+                  {portfolioWorks.map((work) => (
+                    <div key={work.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0a', padding: '12px 16px', borderRadius: '6px', border: '1px solid #222' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <img src={work.image} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '0.9rem' }}>{work.title}</h4>
+                          <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase' }}>Tag: {work.tag} | Type: {work.type}</span>
+                        </div>
+                      </div>
+                      <button onClick={() => handleDeleteProject(work.id)} style={{ background: 'rgba(255,0,0,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,0,0,0.3)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // CUSTOM 404 NOT FOUND RENDER CHECK
   if (isNotFound) {
@@ -518,7 +760,6 @@ export default function App() {
               letterSpacing: '0.1em',
               textDecoration: 'none',
               display: 'inline-block',
-              transition: 'transform 0.2s ease',
             }}
           >
             RETURN HOME ↗
@@ -552,10 +793,12 @@ export default function App() {
           background: 'rgba(0,0,0,0.4)'
         }} 
       />
-<div style={{ position: 'absolute', top: '32%', left: '50%', transform: 'translateX(-50%)', width: '100%', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'semibold', fontFamily: 'montserrat', color: '#fff', zIndex: 10, letterSpacing: '2px', textTransform: 'uppercase', pointerEvents: 'none' }}>
-  {displaySlogan}
-  <span style={{ opacity: 0.7 }}>|</span>
-</div>
+
+      <div style={{ position: 'absolute', top: '32%', left: '50%', transform: 'translateX(-50%)', width: '100%', textAlign: 'center', fontSize: '1.2rem', fontWeight: '600', fontFamily: 'Montserrat, sans-serif', color: '#fff', zIndex: 10, letterSpacing: '2px', textTransform: 'uppercase', pointerEvents: 'none' }}>
+        {displaySlogan}
+        <span style={{ opacity: 0.7 }}>|</span>
+      </div>
+
       <div style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', zIndex: 1, display: activeView ? 'none' : 'flex', alignItems: 'flex-end', padding: isMobile ? '20px' : '32px', boxSizing: 'border-box' }}>
         <div style={{ margin: '0 auto 40px auto', textAlign: 'center', opacity: 0.7, pointerEvents: 'none' }}>
           <span style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll down for Services ↓</span>
@@ -564,46 +807,53 @@ export default function App() {
 
       <div 
         style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', zIndex: 1, display: activeView ? 'none' : 'block', touchAction: 'pan-y' }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchMove={(e) => { touchEndX.current = e.touches[0].clientX; }}
+        onTouchEnd={() => {
+          const diff = touchStartX.current - touchEndX.current;
+          if (Math.abs(diff) > 50) {
+            if (diff > 0) setCarouselIndex((prev) => (prev + 1) % 3);
+            else setCarouselIndex((prev) => (prev - 1 + 3) % 3);
+          }
+        }}
       >
         <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', zIndex: 2 }}>
-  <Canvas camera={{ position: [0, 0, isMobile ? 10 : isTablet ? 9.5 : 8], fov: 50 }} gl={{ alpha: true }}>
-    <ambientLight intensity={1.8} />
-    <directionalLight position={[10, 10, 5]} intensity={2} />
-    <pointLight position={[-10, -10, -5]} intensity={1.5} />
-    
-    <CameraController targetPosition={camTarget} isMobile={isMobile} isTablet={isTablet} />
+          <Canvas camera={{ position: [0, 0, isMobile ? 10 : isTablet ? 9.5 : 8], fov: 50 }} gl={{ alpha: true }}>
+            <ambientLight intensity={1.8} />
+            <directionalLight position={[10, 10, 5]} intensity={2} />
+            <pointLight position={[-10, -10, -5]} intensity={1.5} />
+            
+            <CameraController targetPosition={camTarget} isMobile={isMobile} isTablet={isTablet} />
 
-    <SpatialNode 
-      position={nodePositions.social} 
-      imagePath="/images/deephook_Shopper.jpg" 
-      category="Social Media"
-      isActive={activeView === 'shopper'} 
-      onClick={() => handleNodeClick('shopper', 'Social Media', nodePositions.social)} 
-      isMobile={isMobile}
-    />
+            <SpatialNode 
+              position={nodePositions.social} 
+              imagePath="/images/deephook_Shopper.jpg" 
+              category="Social Media"
+              isActive={activeView === 'shopper'} 
+              onClick={() => handleNodeClick('shopper', 'Social Media', nodePositions.social)} 
+              isMobile={isMobile}
+            />
 
-    <SpatialNode 
-      position={nodePositions.branding} 
-      imagePath="/images/Pen.jpg" 
-      category="Branding & Printing"
-      isActive={activeView === 'pen'} 
-      onClick={() => handleNodeClick('pen', 'Branding & Printing', nodePositions.branding)} 
-      isMobile={isMobile}
-    />
+            <SpatialNode 
+              position={nodePositions.branding} 
+              imagePath="/images/Pen.jpg" 
+              category="Branding & Printing"
+              isActive={activeView === 'pen'} 
+              onClick={() => handleNodeClick('pen', 'Branding & Printing', nodePositions.branding)} 
+              isMobile={isMobile}
+            />
 
-    <SpatialNode 
-      position={nodePositions.media} 
-      imagePath="/images/Stationary.jpg" 
-      category="Media Production"
-      isActive={activeView === 'merch'} 
-      onClick={() => handleNodeClick('merch', 'Media Production', nodePositions.media)} 
-      isMobile={isMobile}
-    />
-  </Canvas>
-</div>
+            <SpatialNode 
+              position={nodePositions.media} 
+              imagePath="/images/Stationary.jpg" 
+              category="Media Production"
+              isActive={activeView === 'merch'} 
+              onClick={() => handleNodeClick('merch', 'Media Production', nodePositions.media)} 
+              isMobile={isMobile}
+            />
+          </Canvas>
+        </div>
+
         {isMobile && (
           <div style={{ position: 'absolute', bottom: '60px', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 5, pointerEvents: 'none' }}>
             {[0, 1, 2].map((idx) => (
@@ -885,7 +1135,7 @@ export default function App() {
               margin: '0 auto',
             }}
           >
-            {PORTFOLIO_WORKS
+            {portfolioWorks
               .filter((work) => {
                 const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
                 const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1056,19 +1306,19 @@ export default function App() {
       )}
 
       <header style={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '16px 20px' : '24px 32px', pointerEvents: 'none', boxSizing: 'border-box' }}>
-     <a 
-      href="#" 
-      onClick={(e) => {
-        e.preventDefault();
-        window.location.href = '/';
-      }}
-    >
-  <img
-    src="/images/deephook-logo.png"
-    alt="Deephook Logo"
-    style={{ height: isMobile ? '22px' : '28px', objectFit: 'contain', pointerEvents: 'auto', cursor: 'pointer' }}
-  />
-</a>
+        <a 
+          href="#" 
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/';
+          }}
+        >
+          <img
+            src="/images/deephook-logo.png"
+            alt="Deephook Logo"
+            style={{ height: isMobile ? '22px' : '28px', objectFit: 'contain', pointerEvents: 'auto', cursor: 'pointer' }}
+          />
+        </a>
         
         <div style={{ pointerEvents: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
           {isMobile && (
