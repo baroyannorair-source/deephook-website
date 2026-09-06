@@ -598,33 +598,39 @@ export default function App() {
       isMobile={isMobile}
     />
 
-    <SpatialNode 
-      position={nodePositions.media} 
-      imagePath="/images/Stationary.jpg" 
-      category="Media Production"
-      isActive={activeView === 'merch'} 
-      onClick={() => handleNodeClick('merch', 'Media Production', nodePositions.media)} 
-      isMobile={isMobile}
-    />
-  </Canvas>
-</div>
-        {isMobile && (
-          <div style={{ position: 'absolute', bottom: '60px', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 5, pointerEvents: 'none' }}>
-            {[0, 1, 2].map((idx) => (
-              <div 
-                key={idx}
-                style={{
-                  width: carouselIndex === idx ? '24px' : '6px',
-                  height: '6px',
-                  borderRadius: '3px',
-                  background: carouselIndex === idx ? '#fff' : 'rgba(255,255,255,0.3)',
-                  transition: 'all 0.3s ease',
-                }}
-              />
-            ))}
-          </div>
-        )}
+   <SpatialNode 
+        position={nodePositions.media} 
+        imagePath="/images/Stationary.jpg" 
+        category="Media Production"
+        isActive={activeView === 'merch'} 
+        onClick={() => handleNodeClick('merch', 'Media Production', nodePositions.media)} 
+        isMobile={isMobile}
+      />
+    </Canvas>
 
+    {isMobile && (
+      <div style={{ position: 'absolute', bottom: '60px', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 5, pointerEvents: 'none' }}>
+        {[0, 1, 2].map((idx) => (
+          <div 
+            key={idx}
+            style={{
+              width: carouselIndex === idx ? '24px' : '6px',
+              height: '6px',
+              borderRadius: '3px',
+              background: carouselIndex === idx ? '#fff' : 'rgba(255,255,255,0.3)',
+              transition: 'all 0.3s ease',
+            }}
+          />
+        ))}
+      </div>
+    )}
+
+    <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', opacity: 0.7 }}>
+      <span style={{ color: '#fff', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll for Team &larr;&rarr;</span>
+    </div>
+  </div>
+  );
+}
         <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', opacity: 0.7 }}>
           <span style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Scroll for Team ↓</span>
         </div>
