@@ -142,27 +142,31 @@ function SpatialNode({
   const handleClick = (e: any) => { e.stopPropagation(); onClick(); };
 
 return (
-    <group 
-      ref={groupRef} 
-      position={position}
-      onClick={handleClick}
-      onPointerOver={handlePointerOver}
-      onPointerOut={handlePointerOut}
-    >
-      <RoundedBox 
-        args={boxArgs} 
-        radius={0.08} 
-        smoothness={4}
-      >
+    <group ref={groupRef} position={position}>
+      {/* 1. Base 3D Box */}
+      <RoundedBox args={boxArgs} radius={0.08} smoothness={4}>
         <meshStandardMaterial color="#4d4d4d" roughness={0.3} metalness={0.4} />
       </RoundedBox>
 
+      {/* 2. Visual Image Mesh (pointer events disabled here so it doesn't interfere) */}
       <mesh position={[0, 0, 0.035]}>
         <planeGeometry args={planeArgs} />
         <meshBasicMaterial map={texture} />
       </mesh>
 
-      <Html position={[0, 0, 0.04]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
+      {/* 3. Dedicated Transparent Hit Plane (handles all interactions smoothly across the whole card) */}
+      <mesh 
+        position={[0, 0, 0.04]}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
+        <planeGeometry args={planeArgs} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+
+      {/* 4. HTML Hover Overlay */}
+      <Html position={[0, 0, 0.045]} center distanceFactor={7} zIndexRange={[100, 0]} pointerEvents="none">
         <div 
           style={{
             width: isMobile ? '180px' : '210px',
