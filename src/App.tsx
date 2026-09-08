@@ -64,7 +64,7 @@ const TEAM_MEMBERS = [
     image: 'https://ik.imagekit.io/deephook/Gemini_Generated_Image_1el8zq1el8zq1el8.jfif', 
     bio: 'Head of the company with years of experience and a great sense of humor.',
     email: 'deephook.agency@gmail.com',
-    phone: '+374 96 199111',
+    phone: '+374 33 818811',
     socialPlatform: 'Telegram',
     socialUrl: 'https://t.me/Valosj90'
   },
