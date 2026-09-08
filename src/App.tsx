@@ -1129,7 +1129,6 @@ export default function App() {
             style={{
               display: 'grid',
               gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
-              gridAutoRows: isMobile ? '140px' : '180px',
               gap: '6px',
               maxWidth: '1600px',
               margin: '0 auto',
