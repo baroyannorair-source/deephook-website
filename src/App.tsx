@@ -1146,15 +1146,15 @@ export default function App() {
                   <div
                     key={work.id}
                     style={{
-                      gridRow: work.type === 'rect-v' ? 'span 2' : 'span 1',
-                      gridColumn: 'span 1',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      borderRadius: '4px',
-                      background: '#1a1a1a',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s ease',
-                    }}
+  gridRow: work.type === 'rect-v' ? 'span 2' : 'span 1',
+  gridColumn: 'span 1',
+  position: 'relative',
+  overflow: 'hidden',
+  borderRadius: '4px',
+  backgroundColor: '#1a1a1a',
+  cursor: 'pointer',
+  aspectRatio: work.type === 'rect-v' ? '9/16' : '1/1',
+}}
                     onClick={() => {
                       setActiveGalleryIndex(0);
                       setSelectedWork(work);
