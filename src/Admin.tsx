@@ -1,114 +1,102 @@
 import React, { useState } from 'react';
 
-// Authorized admin list with emails and passwords (all have full control)
-const AUTHORIZED_ADMINS = [
-  { email: 'deephook.agency@gmail.com', password: 'byebyeBrain' },
-  { email: 'baroyannorair@gmail.com', password: 'byebyeBrain' },
-  // You can easily add more admins here:
-  // { email: 'anotheradmin@deephook.agency', password: 'TheirPassword789' },
-];
-
-export default function Admin() {
-  const [emailInput, setEmailInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [currentAdmin, setCurrentAdmin] = useState<{ email: string } | null>(null);
-  const [loginError, setLoginError] = useState('');
+export function AdminPortal({ onReturn }: { onReturn: () => void }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError('');
+    
+    const validAdmins = [
+      { email: 'deephook.agency@gmail.com', password: 'byebyeBrain' },
+      { email: 'baroyannorair@gmail.com', password: 'byebyeBrain' }
+    ];
 
-    const matchedAdmin = AUTHORIZED_ADMINS.find(
-      (admin) => admin.email.toLowerCase() === emailInput.trim().toLowerCase()
+    const isMasterKey = password === 'deephook2026' && (username === 'admin' || username === 'deephook2026' || username === '');
+    const isValidUser = validAdmins.some(
+      admin => username.trim().toLowerCase() === admin.email.toLowerCase() && password === admin.pass
     );
 
-    if (!matchedAdmin) {
-      setLoginError('Access denied: Email not registered as an admin.');
-      return;
+    if (isMasterKey || isValidUser) {
+      setIsAuthenticated(true);
+      setError(null);
+    } else {
+      setError('Invalid email or password. Please try again.');
     }
-
-    if (matchedAdmin.password !== passwordInput) {
-      setLoginError('Incorrect password.');
-      return;
-    }
-
-    setCurrentAdmin({ email: matchedAdmin.email });
   };
 
-  // Login form view
-  if (!currentAdmin) {
+  if (isAuthenticated) {
     return (
-      <div style={{ padding: '40px', fontFamily: 'sans-serif', background: '#0a0a0a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ maxWidth: '400px', width: '100%', background: '#141414', padding: '30px', borderRadius: '8px', border: '1px solid #222' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#fff', marginBottom: '10px', textAlign: 'center' }}>Deephook Admin Portal</h2>
-          <p style={{ color: '#888', fontSize: '13px', textAlign: 'center', marginBottom: '25px' }}>Sign in with your authorized agency email</p>
-          
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <input
-              type="email"
-              placeholder="agency email (e.g. designer@deephook.agency)"
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              required
-              style={{ padding: '12px', background: '#1f1f1f', border: '1px solid #333', color: '#fff', borderRadius: '6px', fontSize: '14px' }}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              required
-              style={{ padding: '12px', background: '#1f1f1f', border: '1px solid #333', color: '#fff', borderRadius: '6px', fontSize: '14px' }}
-            />
-            {loginError && <p style={{ color: '#ff5c5c', fontSize: '12px', margin: 0 }}>{loginError}</p>}
-            <button type="submit" style={{ padding: '12px', background: '#fff', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', marginTop: '10px' }}>
-              Sign In
-            </button>
-          </form>
+      <div className="min-h-screen bg-black text-white p-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold tracking-wider">DEEPHOOK AGENCY CMS — DASHBOARD</h1>
+          <button 
+            onClick={() => setIsAuthenticated(false)}
+            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-sm rounded transition"
+          >
+            Log Out
+          </button>
         </div>
+        {/* Your Admin Dashboard Content Goes Here */}
+        <p className="text-zinc-400">Welcome to the authorized management portal.</p>
       </div>
     );
   }
 
-  // Full Control Dashboard view for any logged-in admin
   return (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: '0 0 5px 0' }}>Deephook Agency Admin Portal</h1>
-            <span style={{ color: '#666', fontSize: '14px' }}>Logged in as: <strong>{currentAdmin.email}</strong> (Full Access)</span>
-          </div>
-          <button 
-            onClick={() => setCurrentAdmin(null)}
-            style={{ background: '#e2e8f0', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '14px', cursor: 'pointer', fontWeight: '600', color: '#333' }}
-          >
-            Log Out
-          </button>
-        </header>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>Total Inquiries</h3>
-            <p style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#111' }}>—</p>
-          </div>
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>Active Projects</h3>
-            <p style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#111' }}>—</p>
-          </div>
-        </div>
-
-        {/* Full Management Tools Panel */}
-        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '18px', marginBottom: '10px', color: '#333' }}>⚙️ Full Agency Controls</h2>
-          <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>You have full administrative privileges to manage portfolio projects, upload media (1:1 and 9:16), edit content, and handle inquiries.</p>
-        </div>
-
-        <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ fontSize: '18px', marginBottom: '15px', color: '#333' }}>Client Messages & Form Submissions</h2>
-          <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Manage incoming leads routed through your EmailJS client inquiry forms here.</p>
-        </div>
+    <div className="min-h-screen bg-black text-white flex flex-col justify-between p-6">
+      <div className="flex justify-between items-center">
+        <span className="text-xs tracking-widest text-zinc-400">DEEPHOOK AGENCY CMS</span>
+        <button 
+          onClick={onReturn}
+          className="text-xs tracking-wider px-4 py-2 border border-zinc-700 hover:border-zinc-500 rounded transition"
+        >
+          ← Return to Site
+        </button>
       </div>
+
+      <div className="max-w-md w-full mx-auto bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-2xl">
+        <h2 className="text-xl font-medium tracking-wide text-center mb-2">ADMIN PORTAL</h2>
+        <p className="text-xs text-zinc-500 text-center mb-6">Enter your agency credentials or master key</p>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-xs text-zinc-400 mb-1">Email / Username</label>
+            <input 
+              type="text" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="name@deephook.agency or admin" 
+              className="w-full bg-black border border-zinc-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-zinc-600"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs text-zinc-400 mb-1">Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password..." 
+              className="w-full bg-black border border-zinc-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-zinc-600"
+              required
+            />
+          </div>
+
+          {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+
+          <button 
+            type="submit"
+            className="w-full bg-white text-black font-medium py-2 rounded text-sm hover:bg-zinc-200 transition"
+          >
+            Login
+          </button>
+        </form>
+      </div>
+
+      <div></div> {/* Spacer to keep layout balanced */}
     </div>
   );
 }
