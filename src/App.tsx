@@ -531,9 +531,9 @@ export default function App() {
   };
 
   // ADMIN ROUTE RENDER
-  if (isAdminRoute) {
-    return <Admin />;
-  }
+if (isAdminRoute) {
+  return <AdminPortal onReturn={() => setIsAdminRoute(false)} />;
+}
 
   // CUSTOM 404 NOT FOUND RENDER CHECK
   if (isNotFound) {
