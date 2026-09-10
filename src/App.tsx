@@ -4,6 +4,7 @@ import { useCursor, RoundedBox, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import emailjs from '@emailjs/browser';
+import Admin from './Admin';
 
 const famousSlogans = [
   "Apple: Think different",
@@ -532,45 +533,10 @@ export default function App() {
   };
 
   // ADMIN ROUTE RENDER
-  if (isAdminRoute) {
-    return (
-      <div style={{ width: '100vw', height: '100vh', background: '#0a0a0a', color: '#fff', overflowY: 'auto', fontFamily: 'sans-serif', padding: '30px', boxSizing: 'border-box' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid #222', paddingBottom: '20px' }}>
-            <div>
-              <span style={{ fontSize: '10px', color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Deephook Agency CMS</span>
-              <h1 style={{ fontSize: '1.8rem', fontWeight: 400, margin: '4px 0 0 0', letterSpacing: '0.1em' }}>ADMIN PORTAL</h1>
-            </div>
-            <a href="/" style={{ background: '#222', color: '#fff', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', textDecoration: 'none' }}>
-              ← Return to Site
-            </a>
-          </div>
-
-          {!adminLoggedIn ? (
-            <div style={{ background: '#141414', border: '1px solid #222', padding: '40px', borderRadius: '8px', textAlign: 'center', maxWidth: '400px', margin: '60px auto' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', letterSpacing: '0.1em' }}>ENTER ADMIN PASSWORD</h3>
-              <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '20px' }}>Password is: <code>deephook2026</code></p>
-              <input 
-                type="password"
-                placeholder="Password..."
-                value={adminPasswordInput}
-                onChange={(e) => setAdminPasswordInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { if (adminPasswordInput === 'deephook2026') setAdminLoggedIn(true); else alert('Incorrect password'); }}}
-                style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '12px', borderRadius: '6px', color: '#fff', marginBottom: '16px', outline: 'none', boxSizing: 'border-box' }}
-              />
-              <button 
-                onClick={() => {
-                  if (adminPasswordInput === 'deephook2026') setAdminLoggedIn(true);
-                  else alert('Incorrect password');
-                }}
-                style={{ width: '100%', background: '#fff', color: '#000', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}
-              >
-                Login
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-              
+ if (isAdminRoute) {
+  return <Admin />;
+}
+             
               {/* SYNC & BACKUP CONTROLS */}
               <div style={{ background: '#141414', border: '1px solid #222', padding: '20px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
                 <div>
