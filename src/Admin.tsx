@@ -64,19 +64,30 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // CMS Form States
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      title: 'VISUAL CONTENT CREATION FOR SILVER JEWELRY BRAND',
-      category: 'Brand Identity',
-      aspectRatio: '9:16',
-      description: 'Qveen Jewellery 2021 Virtual Catwalk during London Fashion Week...',
-      imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop',
-      youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      gallery: []
+  // CMS Form States synced with localStorage
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const saved = localStorage.getItem('deephook_portfolio_works');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return []; }
     }
-  ]);
+    return [
+      {
+        id: '1',
+        title: 'VISUAL CONTENT CREATION FOR SILVER JEWELRY BRAND',
+        category: 'Brand Identity',
+        aspectRatio: '9:16',
+        description: 'Qveen Jewellery 2021 Virtual Catwalk during London Fashion Week...',
+        imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop',
+        youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        gallery: []
+      }
+    ];
+  });
+
+  const saveProjectsToStorage = (updatedProjects: Project[]) => {
+    setProjects(updatedProjects);
+    localStorage.setItem('deephook_portfolio_works', JSON.stringify(updatedProjects));
+  };
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Brand Identity');
@@ -126,7 +137,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
     };
 
-    setProjects([newProject, ...projects]);
+    saveProjectsToStorage([newProject, ...projects]);
     setTitle('');
     setDescription('');
     setImageUrl('');
@@ -138,7 +149,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   };
 
   const handleDeleteProject = (id: string) => {
-    setProjects(projects.filter(p => p.id !== id));
+   saveProjectsToStorage(projects.filter(p => p.id !== id));
   };
 
   if (isAuthenticated) {
