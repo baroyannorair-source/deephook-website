@@ -93,3 +93,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
             Login
           </button>
         </form>
+      </div>
+      <div></div>
+    </div>
+  );
+}
