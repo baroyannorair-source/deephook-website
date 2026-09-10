@@ -683,17 +683,8 @@ export default function App() {
                         </div>
                       </div>
                       <button onClick={() => handleDeleteProject(work.id)} style={{ background: 'rgba(255,0,0,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,0,0,0.3)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
-                        Delete
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
+                        Delete          
           )}
-        </div>
-      </div>
     );
   }
 
