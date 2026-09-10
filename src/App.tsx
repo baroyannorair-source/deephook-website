@@ -229,8 +229,6 @@ function CameraController({ targetPosition, isMobile, isTablet }: { targetPositi
 export default function App() {
   const [isAdminRoute, setIsAdminRoute] = useState<boolean>(false);
   const [isNotFound, setIsNotFound] = useState<boolean>(false);
-  const [adminLoggedIn, setAdminLoggedIn] = useState<boolean>(false);
-  const [adminPasswordInput, setAdminPasswordInput] = useState<string>('');
 
   // Portfolio works state loaded from localStorage or fallback to INITIAL_WORKS
   const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
@@ -533,159 +531,8 @@ export default function App() {
   };
 
   // ADMIN ROUTE RENDER
- if (isAdminRoute) {
-  return <Admin />;
-}
-             
-              {/* SYNC & BACKUP CONTROLS */}
-              <div style={{ background: '#141414', border: '1px solid #222', padding: '20px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-                <div>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '0.95rem' }}>Team Project Syncing</h4>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#888' }}>Export your JSON file to share with team members or import a backup.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={handleExportJSON} style={{ background: '#222', color: '#fff', border: '1px solid #333', padding: '8px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>
-                    Export Projects JSON ↗
-                  </button>
-                  <label style={{ background: '#fff', color: '#000', padding: '8px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-                    Import JSON Backup
-                    <input type="file" accept=".json" onChange={handleImportJSON} style={{ display: 'none' }} />
-                  </label>
-                </div>
-              </div>
-
-              {/* BEHANCE-STYLE CREATOR FORM */}
-              <form onSubmit={handleAddProjectSubmit} style={{ background: '#141414', border: '1px solid #222', padding: '30px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>+ Create New Project</h3>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Project Title</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Deephook Motion Campaign" 
-                      value={newTitle} 
-                      onChange={(e) => setNewTitle(e.target.value)} 
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Tag Category</label>
-                    <select 
-                      value={newTag} 
-                      onChange={(e) => setNewTag(e.target.value)}
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
-                    >
-                      <option value="Banner">Banner</option>
-                      <option value="Logo">Logo</option>
-                      <option value="Sticker">Sticker</option>
-                      <option value="Flyer">Flyer</option>
-                      <option value="Brand Identity">Brand Identity</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Grid Shape / Layout</label>
-                    <select 
-                      value={newType} 
-                      onChange={(e) => setNewType(e.target.value)}
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
-                    >
-                      <option value="square">Square (1x1)</option>
-                      <option value="rect-v">Vertical Rectangle (Tall 1x2)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Main Image URL (ImageKit or Direct)</label>
-                    <input 
-                      type="text" 
-                      placeholder="https://ik.imagekit.io/deephook/..." 
-                      value={newImage} 
-                      onChange={(e) => setNewImage(e.target.value)} 
-                      style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Project Description</label>
-                  <textarea 
-                    rows={4}
-                    placeholder="Write detailed creative breakdown..." 
-                    value={newDescription} 
-                    onChange={(e) => setNewDescription(e.target.value)} 
-                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>YouTube Video URL (for Player inside modal)</label>
-                  <input 
-                    type="text" 
-                    placeholder="https://www.youtube.com/embed/..." 
-                    value={newYoutubeUrl} 
-                    onChange={(e) => setNewYoutubeUrl(e.target.value)} 
-                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#aaa', textTransform: 'uppercase', marginBottom: '6px' }}>Add Gallery Images (Paste URL and click Add)</label>
-                  <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
-                    <input 
-                      type="text" 
-                      placeholder="https://ik.imagekit.io/deephook/gallery1.jpg"
-                      value={newGalleryInput}
-                      onChange={(e) => setNewGalleryInput(e.target.value)}
-                      style={{ flex: 1, background: '#0a0a0a', border: '1px solid #333', padding: '10px', borderRadius: '6px', color: '#fff' }}
-                    />
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        if (newGalleryInput.trim()) {
-                          setNewGalleryList([...newGalleryList, newGalleryInput.trim()]);
-                          setNewGalleryInput('');
-                        }
-                      }}
-                      style={{ background: '#333', color: '#fff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
-                    >
-                      Add to Gallery
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {newGalleryList.map((url, idx) => (
-                      <span key={idx} style={{ background: '#222', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Img {idx + 1}
-                        <button type="button" onClick={() => setNewGalleryList(newGalleryList.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>✕</button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <button type="submit" style={{ background: '#fff', color: '#000', border: 'none', padding: '14px', borderRadius: '6px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginTop: '10px' }}>
-                  Publish Project Live ↗
-                </button>
-              </form>
-
-              {/* EXISTING PROJECTS LIST */}
-              <div style={{ background: '#141414', border: '1px solid #222', padding: '30px', borderRadius: '8px' }}>
-                <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2rem', letterSpacing: '0.1em' }}>Manage Existing Works ({portfolioWorks.length})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto' }}>
-                  {portfolioWorks.map((work) => (
-                    <div key={work.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0a', padding: '12px 16px', borderRadius: '6px', border: '1px solid #222' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <img src={work.image} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                        <div>
-                          <h4 style={{ margin: 0, fontSize: '0.9rem' }}>{work.title}</h4>
-                          <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase' }}>Tag: {work.tag} | Type: {work.type}</span>
-                        </div>
-                      </div>
-                      <button onClick={() => handleDeleteProject(work.id)} style={{ background: 'rgba(255,0,0,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,0,0,0.3)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
-                        Delete          
-          )}
-    );
+  if (isAdminRoute) {
+    return <Admin />;
   }
 
   // CUSTOM 404 NOT FOUND RENDER CHECK
@@ -823,6 +670,9 @@ export default function App() {
                   background: carouselIndex === idx ? '#fff' : 'rgba(255,255,255,0.3)',
                   transition: 'all 0.3s ease',
                 }}
+              />
+            ))}
+          </div>
         )}
 
         <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', opacity: 0.7 }}>
@@ -1099,15 +949,15 @@ export default function App() {
                   <div
                     key={work.id}
                     style={{
-  gridRow: work.type === 'rect-v' ? 'span 2' : 'span 1',
-  gridColumn: 'span 1',
-  position: 'relative',
-  overflow: 'hidden',
-  borderRadius: '4px',
-  backgroundColor: '#1a1a1a',
-  cursor: 'pointer',
-  aspectRatio: work.type === 'rect-v' ? '9/16' : '1/1',
-}}
+                      gridRow: work.type === 'rect-v' ? 'span 2' : 'span 1',
+                      gridColumn: 'span 1',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      borderRadius: '4px',
+                      backgroundColor: '#1a1a1a',
+                      cursor: 'pointer',
+                      aspectRatio: work.type === 'rect-v' ? '9/16' : '1/1',
+                    }}
                     onClick={() => {
                       setActiveGalleryIndex(0);
                       setSelectedWork(work);
