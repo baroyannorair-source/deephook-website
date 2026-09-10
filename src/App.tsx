@@ -832,9 +832,6 @@ export default function App() {
                   background: carouselIndex === idx ? '#fff' : 'rgba(255,255,255,0.3)',
                   transition: 'all 0.3s ease',
                 }}
-              />
-            ))}
-          </div>
         )}
 
         <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', opacity: 0.7 }}>
