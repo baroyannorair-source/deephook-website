@@ -1,4 +1,63 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+
+// Floating Paths Background Component integrated directly
+function FloatingPathsBackground({
+  position,
+  children,
+  className,
+}: {
+  position: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const paths = Array.from({ length: 36 }, (_, i) => ({
+    id: i,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    color: `rgba(255,255,255,${0.05 + i * 0.02})`,
+    width: 0.5 + i * 0.03,
+  }));
+
+  return (
+    <div className={`w-full relative overflow-hidden ${className || ''}`}>
+      <div className="absolute inset-0 pointer-events-none">
+        <svg
+          className="w-full h-full text-zinc-700 opacity-40"
+          viewBox="0 0 696 316"
+          fill="none"
+        >
+          {paths.map((path) => (
+            <motion.path
+              key={path.id}
+              d={path.d}
+              stroke="currentColor"
+              strokeWidth={path.width}
+              strokeOpacity={0.15 + path.id * 0.02}
+              initial={{ pathLength: 0.3, opacity: 0.4 }}
+              animate={{
+                pathLength: 1,
+                opacity: [0.2, 0.5, 0.2],
+                pathOffset: [0, 1, 0],
+              }}
+              transition={{
+                duration: 20 + (path.id % 10),
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              }}
+            />
+          ))}
+        </svg>
+      </div>
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
 
 export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [username, setUsername] = useState('');
@@ -29,72 +88,72 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black text-white p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold tracking-wider">DEEPHOOK AGENCY CMS — DASHBOARD</h1>
+      <FloatingPathsBackground position={1} className="min-h-screen bg-black text-white p-8">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+          <h1 style={{ fontSize: '1.2rem', fontWeight: 600, letterSpacing: '0.15em', margin: 0 }}>DEEPHOOK AGENCY CMS — DASHBOARD</h1>
           <button 
             onClick={() => setIsAuthenticated(false)}
-            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-sm rounded transition"
+            style={{ padding: '8px 16px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
           >
             Log Out
           </button>
         </div>
-        <p className="text-zinc-400">Welcome to the authorized management portal.</p>
-      </div>
+        <p style={{ color: '#aaa', fontSize: '0.9rem' }}>Welcome to the authorized management portal.</p>
+      </FloatingPathsBackground>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-between p-6">
-      <div className="flex justify-between items-center">
-        <span className="text-xs tracking-widest text-zinc-400">DEEPHOOK AGENCY CMS</span>
+    <FloatingPathsBackground position={1} className="min-h-screen bg-black text-white flex flex-col justify-between p-6 box-border" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <span style={{ fontSize: '0.75rem', letterSpacing: '0.2em', color: '#888', textTransform: 'uppercase' }}>DEEPHOOK AGENCY CMS</span>
         <button 
           onClick={onReturn}
-          className="text-xs tracking-wider px-4 py-2 border border-zinc-700 hover:border-zinc-500 rounded transition"
+          style={{ fontSize: '0.75rem', letterSpacing: '0.1em', padding: '8px 16px', background: 'transparent', color: '#fff', border: '1px solid #444', borderRadius: '6px', cursor: 'pointer' }}
         >
           ← Return to Site
         </button>
       </div>
 
-      <div className="max-w-md w-full mx-auto bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-2xl">
-        <h2 className="text-xl font-medium tracking-wide text-center mb-2">ADMIN PORTAL</h2>
-        <p className="text-xs text-zinc-500 text-center mb-6">Enter your agency credentials</p>
+      <div style={{ maxWidth: '420px', width: '100%', margin: '40px auto', background: 'rgba(15, 15, 15, 0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', padding: '32px', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)' }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0.1em', textAlign: 'center', margin: '0 0 6px 0', textTransform: 'uppercase' }}>Admin Portal</h2>
+        <p style={{ fontSize: '0.75rem', color: '#888', textAlign: 'center', margin: '0 0 24px 0', letterSpacing: '0.05em' }}>Enter your agency credentials</p>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label className="block text-xs text-zinc-400 mb-1">Email / Username (Optional if using master key)</label>
+            <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px', letterSpacing: '0.05em' }}>Email / Username (Optional if using master key)</label>
             <input 
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="baroyannorair@gmail.com" 
-              className="w-full bg-black border border-zinc-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-zinc-600"
+              style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', borderRadius: '6px', padding: '10px 12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 
           <div>
-            <label className="block text-xs text-zinc-400 mb-1">Password</label>
+            <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px', letterSpacing: '0.05em' }}>Password</label>
             <input 
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password..." 
-              className="w-full bg-black border border-zinc-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-zinc-600"
+              style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', borderRadius: '6px', padding: '10px 12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
               required
             />
           </div>
 
-          {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+          {error && <p style={{ fontSize: '0.75rem', color: '#ff6b6b', textAlign: 'center', margin: 0 }}>{error}</p>}
 
           <button 
             type="submit"
-            className="w-full bg-white text-black font-medium py-2 rounded text-sm hover:bg-zinc-200 transition"
+            style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '11px', borderRadius: '6px', fontSize: '0.85rem', cursor: 'pointer', border: 'none', marginTop: '4px' }}
           >
             Login
           </button>
         </form>
       </div>
-      <div></div>
-    </div>
+      <div />
+    </FloatingPathsBackground>
   );
 }
