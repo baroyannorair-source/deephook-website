@@ -4,7 +4,7 @@ import { useCursor, RoundedBox, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import emailjs from '@emailjs/browser';
-import Admin from './Admin';
+import { AdminPortal } from './Admin';
 
 const famousSlogans = [
   "Apple: Think different",
