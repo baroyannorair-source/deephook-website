@@ -50,8 +50,11 @@ interface Project {
   id: string;
   title: string;
   category: string;
+  aspectRatio: '1:1' | '9:16';
+  description: string;
   imageUrl: string;
-  link: string;
+  youtubeUrl: string;
+  gallery: string[];
 }
 
 export function AdminPortal({ onReturn }: { onReturn: () => void }) {
@@ -61,14 +64,27 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Portfolio Management States
+  // CMS Form States
   const [projects, setProjects] = useState<Project[]>([
-    { id: '1', title: 'Vertical AI Series', category: 'AI Production', imageUrl: '', link: 'https://behance.net/Zenoma_Marketing' }
+    {
+      id: '1',
+      title: 'VISUAL CONTENT CREATION FOR SILVER JEWELRY BRAND',
+      category: 'Brand Identity',
+      aspectRatio: '9:16',
+      description: 'Qveen Jewellery 2021 Virtual Catwalk during London Fashion Week...',
+      imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop',
+      youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      gallery: []
+    }
   ]);
+
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('Brand Identity');
+  const [aspectRatio, setAspectRatio] = useState<'1:1' | '9:16'>('1:1');
+  const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [link, setLink] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [galleryInput, setGalleryInput] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -94,8 +110,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   const handleAddProject = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !category) {
-      setError('Please fill in at least the project title and category.');
+    if (!title || !imageUrl) {
+      setError('Please provide at least a project title and main thumbnail image.');
       return;
     }
 
@@ -103,17 +119,21 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       id: Date.now().toString(),
       title,
       category,
-      imageUrl: imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop',
-      link: link || '#'
+      aspectRatio,
+      description,
+      imageUrl,
+      youtubeUrl,
+      gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
     };
 
     setProjects([newProject, ...projects]);
     setTitle('');
-    setCategory('');
+    setDescription('');
     setImageUrl('');
-    setLink('');
+    setYoutubeUrl('');
+    setGalleryInput('');
     setError(null);
-    setSuccessMessage('Project successfully added to portfolio!');
+    setSuccessMessage('Project successfully uploaded to portfolio!');
     setTimeout(() => setSuccessMessage(null), 4000);
   };
 
@@ -125,17 +145,16 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     return (
       <div style={{ position: 'relative', minHeight: '100vh', background: '#050505', color: '#fff', padding: '40px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box' }}>
         <FloatingPathsBackground position={1} />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '900px', margin: '0 auto' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '960px', margin: '0 auto' }}>
           
-          {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
             <div>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 600, letterSpacing: '0.15em', margin: 0 }}>DEEPHOOK AGENCY CMS</h1>
-              <p style={{ color: '#888', fontSize: '0.85rem', margin: '4px 0 0 0' }}>Portfolio Project Management Dashboard</p>
+              <p style={{ color: '#888', fontSize: '0.85rem', margin: '4px 0 0 0' }}>Portfolio Manager & Uploader</p>
             </div>
             <button 
               onClick={() => setIsAuthenticated(false)}
-              style={{ padding: '10px 20px', background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+              style={{ padding: '10px 20px', background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}
             >
               Log Out
             </button>
@@ -147,81 +166,122 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
             </div>
           )}
 
-          {/* Upload Form Box */}
+          {/* Project Upload Form */}
           <div style={{ background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', padding: '32px', borderRadius: '16px', marginBottom: '40px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Upload New Project</h2>
+            <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Upload New Portfolio Work</h2>
             
-            <form onSubmit={handleAddProject} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Project Title</label>
-                <input 
-                  type="text" 
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Cyberpunk Cinematic" 
-                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                  required
-                />
+            <form onSubmit={handleAddProject} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Project Title</label>
+                  <input 
+                    type="text" 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. VISUAL CONTENT FOR JEWELRY BRAND" 
+                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Category Tag</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                  >
+                    <option value="Banner">Banner</option>
+                    <option value="Logo">Logo</option>
+                    <option value="Sticker">Sticker</option>
+                    <option value="Flyer">Flyer</option>
+                    <option value="Brand Identity">Brand Identity</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Preview Ratio</label>
+                  <select
+                    value={aspectRatio}
+                    onChange={(e) => setAspectRatio(e.target.value as '1:1' | '9:16')}
+                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                  >
+                    <option value="1:1">1:1 Square</option>
+                    <option value="9:16">9:16 Vertical</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Category</label>
-                <input 
-                  type="text" 
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="e.g. Video Production / AI" 
-                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Image URL / Thumbnail</label>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Main Thumbnail Image URL</label>
                 <input 
                   type="text" 
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://..." 
+                  placeholder="https://images.unsplash.com/..." 
+                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>YouTube Video Link / Embed URL</label>
+                <input 
+                  type="text" 
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..." 
                   style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Project Link (Behance / External)</label>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Detailed Description / Project Info</label>
+                <textarea 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Write project background, client overview, and execution notes..." 
+                  rows={4}
+                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Modal Gallery Image URLs (comma-separated)</label>
                 <input 
                   type="text" 
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                  placeholder="https://behance.net/..." 
+                  value={galleryInput}
+                  onChange={(e) => setGalleryInput(e.target.value)}
+                  placeholder="https://img1.com/a.jpg, https://img2.com/b.jpg" 
                   style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div style={{ gridColumn: 'span 2' }}>
-                <button 
-                  type="submit"
-                  style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', border: 'none', letterSpacing: '0.05em' }}
-                >
-                  Publish Project to Portfolio
-                </button>
-              </div>
+              <button 
+                type="submit"
+                style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', border: 'none', letterSpacing: '0.05em', marginTop: '8px' }}
+              >
+                Publish Project to Website
+              </button>
             </form>
           </div>
 
-          {/* Active Projects List */}
+          {/* Existing Projects List */}
           <div>
-            <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 16px 0', textTransform: 'uppercase' }}>Manage Existing Projects ({projects.length})</h2>
+            <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 16px 0', textTransform: 'uppercase' }}>Manage Uploaded Projects ({projects.length})</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {projects.map((project) => (
                 <div key={project.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(15, 15, 15, 0.9)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px 20px', borderRadius: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ width: '48px', height: '48px', background: '#222', borderRadius: '6px', overflow: 'hidden', flexShrink: 0 }}>
+                    <div style={{ width: '56px', height: '56px', background: '#222', borderRadius: '6px', overflow: 'hidden', flexShrink: 0 }}>
                       <img src={project.imageUrl} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div>
                       <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500 }}>{project.title}</h4>
-                      <span style={{ fontSize: '0.75rem', color: '#888' }}>{project.category}</span>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>{project.category}</span>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', padding: '2px 6px', borderRadius: '4px', color: '#aaa' }}>Ratio: {project.aspectRatio}</span>
+                      </div>
                     </div>
                   </div>
                   <button 
@@ -260,7 +320,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Email / Username (Optional if using master key)</label>
+            <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Email / Username</label>
             <input 
               type="text" 
               value={username}
@@ -285,7 +345,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center', padding: 0 }}
-                title={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
