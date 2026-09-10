@@ -154,7 +154,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   if (isAuthenticated) {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', background: '#050505', color: '#fff', padding: '40px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box' }}>
+<div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflowY: 'auto', background: '#050505', color: '#fff', padding: '40px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box' }}>
         <FloatingPathsBackground position={1} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '960px', margin: '0 auto' }}>
           
