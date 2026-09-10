@@ -10,13 +10,13 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     e.preventDefault();
     
     const validAdmins = [
-      { email: 'deephook.agency@gmail.com', password: 'byebyeBrain' },
-      { email: 'baroyannorair@gmail.com', password: 'byebyeBrain' }
+      { email: 'baroyannorair@gmail.com', pass: 'byebyeBrain' },
+      { email: 'deephook.agency@gmail.com', pass: 'byebyeBrain' }
     ];
 
-    const isMasterKey = password === 'deephook2026' && (username === 'admin' || username === 'deephook2026' || username === '');
+    const isMasterKey = password === 'byebyeBrain';
     const isValidUser = validAdmins.some(
-      admin => username.trim().toLowerCase() === admin.email.toLowerCase() && password === admin.pass
+      admin => (username === '' || username.toLowerCase() === admin.email.toLowerCase()) && password === admin.pass
     );
 
     if (isMasterKey || isValidUser) {
@@ -39,7 +39,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
             Log Out
           </button>
         </div>
-        {/* Your Admin Dashboard Content Goes Here */}
         <p className="text-zinc-400">Welcome to the authorized management portal.</p>
       </div>
     );
@@ -59,16 +58,16 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
       <div className="max-w-md w-full mx-auto bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-2xl">
         <h2 className="text-xl font-medium tracking-wide text-center mb-2">ADMIN PORTAL</h2>
-        <p className="text-xs text-zinc-500 text-center mb-6">Enter your agency credentials or master key</p>
+        <p className="text-xs text-zinc-500 text-center mb-6">Enter your agency credentials</p>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs text-zinc-400 mb-1">Email / Username</label>
+            <label className="block text-xs text-zinc-400 mb-1">Email / Username (Optional if using master key)</label>
             <input 
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="name@deephook.agency or admin" 
+              placeholder="baroyannorair@gmail.com" 
               className="w-full bg-black border border-zinc-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-zinc-600"
             />
           </div>
@@ -94,9 +93,3 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
             Login
           </button>
         </form>
-      </div>
-
-      <div></div> {/* Spacer to keep layout balanced */}
-    </div>
-  );
-}
