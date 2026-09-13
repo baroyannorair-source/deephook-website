@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const getAdminPreviewUrl = (url: string) => {
   if (!url) return '';
   if (url.includes('embed/')) return url;
   
   if (url.includes('watch?v=')) {
+    // Strip out extra query parameters if present (like &t=12s)
     const videoId = url.split('watch?v=')[1]?.split('&')[0];
     return `https://www.youtube.com/embed/${videoId}`;
   }
@@ -77,11 +78,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Step 1: Persistent login state initialized via localStorage
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('admin_authenticated') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Active view switcher inside admin: 'builder' or 'manage'
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
@@ -125,27 +122,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Step 2: Unsaved changes warning tracking state
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  // Hook into native beforeunload event to prevent accidental refresh/navigation loss
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!hasUnsavedChanges) return;
-      e.preventDefault();
-      e.returnValue = ''; // Required for modern browsers
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [hasUnsavedChanges]);
-
-  // Handle field change helper to mark dirty state
-  const handleFieldChange = () => {
-    if (!hasUnsavedChanges) setHasUnsavedChanges(true);
-  };
-
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const validAdmins = [
@@ -160,16 +136,10 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
     if (isMasterKey || isValidUser) {
       setIsAuthenticated(true);
-      localStorage.setItem('admin_authenticated', 'true'); // Step 1: Persist token/flag
       setError(null);
     } else {
       setError('Invalid email or password. Please try again.');
     }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('admin_authenticated'); // Step 1: Clear flag on logout
   };
 
   const handleEditProject = (project: Project) => {
@@ -193,7 +163,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setImageUrl('');
     setYoutubeUrl('');
     setGalleryInput('');
-    setHasUnsavedChanges(false); // Step 2: Reset dirty state
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -248,7 +217,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setYoutubeUrl('');
     setGalleryInput('');
     setError(null);
-    setHasUnsavedChanges(false); // Step 2: Reset dirty state on successful save
     setTimeout(() => setSuccessMessage(null), 4000);
   };
 
@@ -295,7 +263,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
               ← Return to Site
             </button>
             <button 
-              onClick={handleLogout}
+              onClick={() => setIsAuthenticated(false)}
               style={{ padding: '8px 16px', background: '#1c1c24', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}
             >
               Log Out
@@ -380,7 +348,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                           <input 
                             type="text" 
                             value={imageUrl} 
-                            onChange={(e) => { setImageUrl(e.target.value); handleFieldChange(); }} 
+                            onChange={(e) => setImageUrl(e.target.value)} 
                             placeholder="https://images.unsplash.com/..." 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
                           />
@@ -395,14 +363,14 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                           <input 
                             type="text" 
                             value={title} 
-                            onChange={(e) => { setTitle(e.target.value); handleFieldChange(); }} 
+                            onChange={(e) => setTitle(e.target.value)} 
                             placeholder="VISUAL CONTENT CREATION..." 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '14px' }}
                           />
                           <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
                           <textarea 
                             value={description} 
-                            onChange={(e) => { setDescription(e.target.value); handleFieldChange(); }} 
+                            onChange={(e) => setDescription(e.target.value)} 
                             placeholder="Project breakdown..." 
                             rows={3} 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px', resize: 'vertical' }}
@@ -418,7 +386,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                           <input 
                             type="text" 
                             value={galleryInput} 
-                            onChange={(e) => { setGalleryInput(e.target.value); handleFieldChange(); }} 
+                            onChange={(e) => setGalleryInput(e.target.value)} 
                             placeholder="https://img1.jpg, https://img2.jpg" 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
                           />
@@ -433,7 +401,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                           <input 
                             type="text" 
                             value={youtubeUrl} 
-                            onChange={(e) => { setYoutubeUrl(e.target.value); handleFieldChange(); }} 
+                            onChange={(e) => setYoutubeUrl(e.target.value)} 
                             placeholder="https://www.youtube.com/watch?v=..." 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
                           />
@@ -463,7 +431,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <input 
                       type="text" 
                       value={title}
-                      onChange={(e) => { setTitle(e.target.value); handleFieldChange(); }}
+                      onChange={(e) => setTitle(e.target.value)}
                       placeholder="e.g. VISUAL CONTENT FOR JEWELRY" 
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                       required
@@ -475,7 +443,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Category</label>
                       <select
                         value={category}
-                        onChange={(e) => { setCategory(e.target.value); handleFieldChange(); }}
+                        onChange={(e) => setCategory(e.target.value)}
                         style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 8px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                       >
                         <option value="Banner">Banner</option>
@@ -490,7 +458,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Preview Ratio</label>
                       <select
                         value={aspectRatio}
-                        onChange={(e) => { setAspectRatio(e.target.value as '1:1' | '9:16'); handleFieldChange(); }}
+                        onChange={(e) => setAspectRatio(e.target.value as '1:1' | '9:16')}
                         style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 8px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                       >
                         <option value="1:1">1:1 Square</option>
@@ -504,7 +472,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <input 
                       type="text" 
                       value={imageUrl}
-                      onChange={(e) => { setImageUrl(e.target.value); handleFieldChange(); }}
+                      onChange={(e) => setImageUrl(e.target.value)}
                       placeholder="https://images.unsplash.com/..." 
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                       required
@@ -516,32 +484,32 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <input 
                       type="text" 
                       value={youtubeUrl}
-                      onChange={(e) => { setYoutubeUrl(e.target.value); handleFieldChange(); }}
+                      onChange={(e) => setYoutubeUrl(e.target.value)}
                       placeholder="https://www.youtube.com/watch?v=..." 
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                   
                   {youtubeUrl && (
-                    <div style={{ marginTop: '12px' }}>
-                      <span style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Live Playback Preview:</span>
-                      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)' }}>
-                        <iframe
-                          src={getAdminPreviewUrl(youtubeUrl)}
-                          title="Admin Video Preview"
-                          style={{ width: '100%', height: '100%', border: 'none' }}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    </div>
-                  )}
+        <div style={{ marginTop: '12px' }}>
+          <span style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Live Playback Preview:</span>
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)' }}>
+            <iframe
+              src={getAdminPreviewUrl(youtubeUrl)}
+              title="Admin Video Preview"
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
                     <textarea 
                       value={description}
-                      onChange={(e) => { setDescription(e.target.value); handleFieldChange(); }}
+                      onChange={(e) => setDescription(e.target.value)}
                       placeholder="Project background and overview..." 
                       rows={3}
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
@@ -553,7 +521,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <input 
                       type="text" 
                       value={galleryInput}
-                      onChange={(e) => { setGalleryInput(e.target.value); handleFieldChange(); }}
+                      onChange={(e) => setGalleryInput(e.target.value)}
                       placeholder="url1.jpg, url2.jpg" 
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
@@ -685,7 +653,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           </button>
         </form>
       </div>
-      <div style={{ position: 'relative', zIndex: '1' }} />
+      <div style={{ position: 'relative', zIndex: 1 }} />
     </div>
   );
 }
