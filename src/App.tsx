@@ -963,11 +963,11 @@ if (isAdminRoute) {
                       setSelectedWork(work);
                     }}
                   >
-                    <img 
-                      src={work.image} 
-                      alt={work.title} 
-                      style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-                    />
+                    <img
+  src={work.image || work.thumbnail || work.imageUrl || work.cover}
+  alt={work.title}
+  style={{ width: '100%', height: '180px', objectFit: 'contain' }}
+/>
                     <div 
                       style={{
                         position: 'absolute',
