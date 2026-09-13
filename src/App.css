@@ -182,3 +182,83 @@
     border-right-color: var(--border);
   }
 }
+
+/* Cosmic Parallax Background Styles */
+.cosmic-parallax-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+  z-index: -10;
+}
+
+.cosmic-stars, .cosmic-stars-medium, .cosmic-stars-large {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: transparent;
+  animation: animStar var(--animation-iteration, infinite) linear;
+}
+
+.cosmic-stars {
+  width: 1px;
+  height: 1px;
+  animation-duration: 50s;
+}
+
+.cosmic-stars-medium {
+  width: 2px;
+  height: 2px;
+  animation-duration: 100s;
+}
+
+.cosmic-stars-large {
+  width: 3px;
+  height: 3px;
+  animation-duration: 150s;
+}
+
+#horizon {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+#horizon .glow {
+  position: absolute;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140%;
+  height: 200px;
+  background: radial-gradient(ellipse at center, rgba(100, 180, 255, 0.15) 0%, rgba(0,0,0,0) 70%);
+  border-radius: 50%;
+}
+
+#earth {
+  position: absolute;
+  bottom: -400px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px;
+  height: 600px;
+  background: radial-gradient(circle at center, rgba(30, 100, 180, 0.4) 0%, rgba(10, 30, 60, 0.8) 60%, #000 100%);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  z-index: 2;
+  box-shadow: inset 0 20px 30px rgba(100, 200, 255, 0.2);
+}
+
+@keyframes animStar {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-2000px);
+  }
+}
