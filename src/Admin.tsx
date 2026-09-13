@@ -1,109 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-
-// Custom Starry Horizon Canvas Background matching your reference image
-function StarryHorizonBackground() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
-
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Generate stars
-    const starCount = 120;
-    const stars = Array.from({ length: starCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * (height * 0.7), // Concentrated mostly in the upper sky
-      radius: Math.random() * 1.5 + 0.5,
-      alpha: Math.random(),
-      twinkleSpeed: Math.random() * 0.02 + 0.005,
-    }));
-
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      // 1. Deep space background gradient
-      const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
-      bgGradient.addColorStop(0, '#05070f');
-      bgGradient.addColorStop(0.5, '#0b101e');
-      bgGradient.addColorStop(1, '#020305');
-      ctx.fillStyle = bgGradient;
-      ctx.fillRect(0, 0, width, height);
-
-      // 2. Draw twinkling stars
-      stars.forEach((star) => {
-        star.alpha += star.twinkleSpeed;
-        if (star.alpha > 1 || star.alpha < 0.2) {
-          star.twinkleSpeed = -star.twinkleSpeed;
-        }
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(star.alpha)})`;
-        ctx.fill();
-      });
-
-      // 3. Curved horizon planet/earth silhouette with atmospheric blue glow
-      const horizonY = height * 0.65;
-      const curveRadius = width * 1.2;
-
-      // Atmospheric blue rim light gradient
-      const glowGradient = ctx.createRadialGradient(
-        width / 2, horizonY + curveRadius, curveRadius - 20,
-        width / 2, horizonY + curveRadius, curveRadius + 40
-      );
-      glowGradient.addColorStop(0, 'rgba(56, 150, 255, 0.8)');
-      glowGradient.addColorStop(0.4, 'rgba(30, 90, 200, 0.3)');
-      glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(width / 2, horizonY + curveRadius, curveRadius, 0, Math.PI * 2);
-      ctx.fillStyle = glowGradient;
-      ctx.fill();
-      ctx.restore();
-
-      // Solid dark planet body below horizon
-      ctx.beginPath();
-      ctx.arc(width / 2, horizonY + curveRadius, curveRadius, 0, Math.PI * 2);
-      ctx.fillStyle = '#010204';
-      ctx.fill();
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        display: 'block',
-      }}
-    />
-  );
-}
+import React, { useState, useEffect } from 'react';
 
 const getAdminPreviewUrl = (url: string) => {
   if (!url) return '';
@@ -119,6 +14,52 @@ const getAdminPreviewUrl = (url: string) => {
   }
   return url;
 };
+
+function FloatingPathsBackground({ position }: { position: number }) {
+  const paths = Array.from({ length: 24 }, (_, i) => ({
+    id: i,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    width: 0.5 + i * 0.03,
+  }));
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+      <style>{`
+        @keyframes floatPath {
+          0% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+          50% { transform: translateY(-10px) rotate(1deg); opacity: 0.5; }
+          100% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+        }
+        .floating-path {
+          animation: floatPath 15s ease-in-out infinite;
+        }
+      `}</style>
+      <svg
+        style={{ width: '100%', height: '100%', opacity: 0.35 }}
+        viewBox="0 0 696 316"
+        fill="none"
+      >
+        {paths.map((path) => (
+          <path
+            key={path.id}
+            d={path.d}
+            stroke="currentColor"
+            strokeWidth={path.width}
+            strokeOpacity={0.15 + (path.id % 5) * 0.05}
+            className="floating-path"
+            style={{ color: '#71717a', animationDelay: `${path.id * 0.5}s`, animationDuration: `${12 + (path.id % 8)}s` }}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 interface Project {
   id: string;
@@ -137,13 +78,18 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Persistent login state initialization using localStorage
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('admin_authenticated') === 'true';
   });
 
+  // Active view switcher inside admin: 'builder' or 'manage'
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
+
+  // Inline canvas active modal popup state ('image' | 'text' | 'grid' | 'video' | null)
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
 
+  // CMS Form States synced with localStorage
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem('deephook_portfolio_works');
     if (saved) {
@@ -178,13 +124,16 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Unsaved changes tracking state
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Hook into native beforeunload event to prevent accidental navigation/refresh data loss
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!hasUnsavedChanges) return;
       e.preventDefault();
-      e.returnValue = '';
+      e.returnValue = ''; // Required for modern browsers
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
@@ -192,6 +141,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     };
   }, [hasUnsavedChanges]);
 
+  // Handle field change helper to mark dirty state
   const handleFieldChange = () => {
     if (!hasUnsavedChanges) setHasUnsavedChanges(true);
   };
@@ -309,13 +259,11 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   if (isAuthenticated) {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-          <StarryHorizonBackground />
-        </div>
+      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: '#0a0a0c', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+        <FloatingPathsBackground position={1} />
 
         {/* Top Header Navigation Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: 'rgba(18, 18, 22, 0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.08)', zIndex: 10, flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: '#121216', borderBottom: '1px solid rgba(255,255,255,0.08)', zIndex: 10, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.15em', color: '#fff' }}>DEEPHOOK AGENCY CMS</span>
             <div style={{ display: 'flex', background: '#1c1c24', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -361,7 +309,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           {activeTab === 'builder' ? (
             <>
               {/* Central Canvas Preview / Builder Area */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px', alignItems: 'center', justifyContent: 'flex-start', background: 'rgba(13, 13, 16, 0.6)', backdropFilter: 'blur(5px)', position: 'relative' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
                 
                 {editingId !== null && (
                   <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px' }}>
@@ -378,22 +326,22 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   {/* Interactive Canvas Action Buttons */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
                     
-                    <div onClick={() => setActiveModal('image')} style={{ background: 'rgba(20, 20, 25, 0.8)', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🖼️</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Image</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('text')} style={{ background: 'rgba(20, 20, 25, 0.8)', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>T</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('grid')} style={{ background: 'rgba(20, 20, 25, 0.8)', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>⊞</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('video')} style={{ background: 'rgba(20, 20, 25, 0.8)', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>▶</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
                     </div>
@@ -403,7 +351,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
                 {/* Live Card Preview Box */}
                 {imageUrl && (
-                  <div style={{ width: '100%', maxWidth: '420px', background: 'rgba(20, 20, 25, 0.85)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', overflow: 'hidden', padding: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                  <div style={{ width: '100%', maxWidth: '420px', background: '#141419', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', overflow: 'hidden', padding: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
                     <div style={{ width: '100%', height: aspectRatio === '1:1' ? '280px' : '420px', background: '#000', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px' }}>
                       <img src={imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
@@ -505,8 +453,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
               </div>
 
-              {/* Right-Hand Inspector / Config Sidebar */}
-              <div style={{ width: '360px', background: 'rgba(18, 18, 22, 0.85)', backdropFilter: 'blur(10px)', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '24px', flexShrink: 0 }}>
+              {/* Right-Hand Inspector / Config Sidebar (Main Project Meta & Publish Control) */}
+              <div style={{ width: '360px', background: '#121216', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '24px', flexShrink: 0 }}>
                 <h4 style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.1em', color: '#888', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Project Settings</h4>
 
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -628,7 +576,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
               <h2 style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Manage Uploaded Projects ({projects.length})</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {projects.map((project) => (
-                  <div key={project.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(18, 18, 22, 0.85)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', padding: '16px 20px', borderRadius: '10px' }}>
+                  <div key={project.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#121216', border: '1px solid rgba(255,255,255,0.08)', padding: '16px 20px', borderRadius: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ width: '56px', height: '56px', background: '#222', borderRadius: '6px', overflow: 'hidden', flexShrink: 0 }}>
                         <img src={project.imageUrl} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -667,10 +615,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        <StarryHorizonBackground />
-      </div>
+    <div style={{ position: 'relative', minHeight: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', overflow: 'hidden' }}>
+      <FloatingPathsBackground position={1} />
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
         <span style={{ fontSize: '0.75rem', letterSpacing: '0.25em', color: '#777', textTransform: 'uppercase' }}>DEEPHOOK AGENCY CMS</span>
@@ -682,7 +628,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
         </button>
       </div>
 
-      <div style={{ maxWidth: '400px', width: '100%', margin: 'auto', background: 'rgba(18, 18, 22, 0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)', padding: '40px 32px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: '400px', width: '100%', margin: 'auto', background: '#121216', border: '1px solid rgba(255,255,255,0.08)', padding: '40px 32px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)', position: 'relative', zIndex: 1 }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0.12em', textAlign: 'center', margin: '0 0 8px 0', textTransform: 'uppercase' }}>Admin Portal</h2>
         <p style={{ fontSize: '0.75rem', color: '#777', textAlign: 'center', margin: '0 0 28px 0', letterSpacing: '0.05em' }}>Enter your agency credentials</p>
 
