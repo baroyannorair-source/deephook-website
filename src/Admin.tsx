@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
 
+const getAdminPreviewUrl = (url: string) => {
+  if (!url) return '';
+  if (url.includes('embed/')) return url;
+  
+  if (url.includes('watch?v=')) {
+    // Strip out extra query parameters if present (like &t=12s)
+    const videoId = url.split('watch?v=')[1]?.split('&')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  return url;
+};
+
 function FloatingPathsBackground({ position }: { position: number }) {
   const paths = Array.from({ length: 24 }, (_, i) => ({
     id: i,
@@ -473,6 +489,21 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
+                  
+                  {youtubeUrl && (
+        <div style={{ marginTop: '12px' }}>
+          <span style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Live Playback Preview:</span>
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)' }}>
+            <iframe
+              src={getAdminPreviewUrl(youtubeUrl)}
+              title="Admin Video Preview"
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
