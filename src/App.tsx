@@ -1056,7 +1056,7 @@ if (isAdminRoute) {
                   Image Gallery ({activeGalleryIndex + 1} / {selectedWork.gallery.length})
                 </h3>
                 
-               <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000', borderRadius: '8px', overflow: 'hidden' }}>
+               <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000', borderRadius: '8px', overflow: 'hidden' }}>
   <img
     src={selectedWork.gallery[activeGalleryIndex]}
     alt="Gallery Preview"
@@ -1069,6 +1069,60 @@ if (isAdminRoute) {
       display: 'block'
     }}
   />
+
+  {/* Previous Button */}
+  {selectedWork.gallery && selectedWork.gallery.length > 1 && (
+    <button
+      onClick={() => setActiveGalleryIndex((prev) => (prev === 0 ? selectedWork.gallery.length - 1 : prev - 1))}
+      style={{
+        position: 'absolute',
+        left: '12px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        background: 'rgba(0, 0, 0, 0.6)',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '50%',
+        width: '40px',
+        height: '40px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.2rem',
+        zIndex: 10
+      }}
+    >
+      ‹
+    </button>
+  )}
+
+  {/* Next Button */}
+  {selectedWork.gallery && selectedWork.gallery.length > 1 && (
+    <button
+      onClick={() => setActiveGalleryIndex((prev) => (prev === selectedWork.gallery.length - 1 ? 0 : prev + 1))}
+      style={{
+        position: 'absolute',
+        right: '12px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        background: 'rgba(0, 0, 0, 0.6)',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '50%',
+        width: '40px',
+        height: '40px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.2rem',
+        zIndex: 10
+      }}
+    >
+      ›
+    </button>
+  )}
 </div>
                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {selectedWork.gallery.map((imgSrc: string, idx: number) => (
