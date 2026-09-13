@@ -1,5 +1,33 @@
 import { useEffect, useState } from 'react';
 
+const getAdminPreviewUrl = (url: string) => {
+  if (!url) return '';
+  if (url.includes('embed/')) return url;
+  
+  if (url.includes('watch?v=')) {
+    const videoId = url.split('watch?v=')[1]?.split('&')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  return url;
+};
+
+function FloatingPathsBackground({ position }: { position: number }) {
+  const paths = Array.from({ length: 24 }, (_, i) => ({
+    id: i,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    width: 0.5 + i * 0.03,
+  }));
+
 export default function Admin() {
   // 1. All your states go here
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -46,43 +74,6 @@ export default function Admin() {
     setHasUnsavedChanges(false);
   };
 
-  const getAdminPreviewUrl = (url: string) => {
-    // ... your preview url logic
-  };
-
-  // 5. Your return JSX...
-  return (
-    // ...
-  );
-}
-
-const getAdminPreviewUrl = (url: string) => {
-  if (!url) return '';
-  if (url.includes('embed/')) return url;
-  
-  if (url.includes('watch?v=')) {
-    const videoId = url.split('watch?v=')[1]?.split('&')[0];
-    return `https://www.youtube.com/embed/${videoId}`;
-  }
-  if (url.includes('youtu.be/')) {
-    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
-    return `https://www.youtube.com/embed/${videoId}`;
-  }
-  return url;
-};
-
-function FloatingPathsBackground({ position }: { position: number }) {
-  const paths = Array.from({ length: 24 }, (_, i) => ({
-    id: i,
-    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
-      380 - i * 5 * position
-    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
-      152 - i * 5 * position
-    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
-      684 - i * 5 * position
-    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-    width: 0.5 + i * 0.03,
-  }));
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
