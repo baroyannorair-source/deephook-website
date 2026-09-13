@@ -77,7 +77,11 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Persistent login state initialization using localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('admin_authenticated') === 'true';
+  });
 
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
@@ -117,6 +121,27 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Step 2: Unsaved changes warning tracking state
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Hook into native beforeunload event to prevent accidental refresh/navigation loss
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      e.returnValue = ''; // Required for modern browsers
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Handle field change helper to mark dirty state
+  const handleFieldChange = () => {
+    if (!hasUnsavedChanges) setHasUnsavedChanges(true);
+  };
 
   const galleryArray = galleryInput ? galleryInput.split(',').map(s => s.trim()).filter(Boolean) : [];
 
