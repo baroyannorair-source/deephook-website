@@ -1029,9 +1029,9 @@ if (isAdminRoute) {
                 <h2 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 600, margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   {selectedWork.title}
                 </h2>
-                <span style={{ color: '#888', fontSize: '0.75rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  Category Tag: {selectedWork.tag}
-                </span>
+               <span style={{ color: '#888', fontSize: '0.75rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+  {selectedWork.tag}
+</span>
               </div>
               <button 
                 onClick={() => setSelectedWork(null)}
