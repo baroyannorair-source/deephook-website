@@ -78,7 +78,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Persistent login state initialization using localStorage
+  // Step 1: Persistent login state initialized via localStorage
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('admin_authenticated') === 'true';
   });
@@ -125,10 +125,10 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Unsaved changes tracking state
+  // Step 2: Unsaved changes warning tracking state
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Hook into native beforeunload event to prevent accidental navigation/refresh data loss
+  // Hook into native beforeunload event to prevent accidental refresh/navigation loss
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!hasUnsavedChanges) return;
@@ -160,7 +160,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
     if (isMasterKey || isValidUser) {
       setIsAuthenticated(true);
-      localStorage.setItem('admin_authenticated', 'true');
+      localStorage.setItem('admin_authenticated', 'true'); // Step 1: Persist token/flag
       setError(null);
     } else {
       setError('Invalid email or password. Please try again.');
@@ -169,7 +169,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_authenticated'); // Step 1: Clear flag on logout
   };
 
   const handleEditProject = (project: Project) => {
@@ -193,7 +193,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setImageUrl('');
     setYoutubeUrl('');
     setGalleryInput('');
-    setHasUnsavedChanges(false);
+    setHasUnsavedChanges(false); // Step 2: Reset dirty state
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -248,7 +248,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setYoutubeUrl('');
     setGalleryInput('');
     setError(null);
-    setHasUnsavedChanges(false);
+    setHasUnsavedChanges(false); // Step 2: Reset dirty state on successful save
     setTimeout(() => setSuccessMessage(null), 4000);
   };
 
@@ -685,7 +685,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           </button>
         </form>
       </div>
-      <div style={{ position: 'relative', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: '1' }} />
     </div>
   );
 }
