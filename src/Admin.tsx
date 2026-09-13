@@ -219,7 +219,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   if (isAuthenticated) {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: '#0a0a0c', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: 'transparent', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
         <CosmicParallaxBg className="absolute inset-0 -z-10" />
 
         {/* Top Header Navigation Bar */}
