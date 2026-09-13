@@ -5,7 +5,6 @@ const getAdminPreviewUrl = (url: string) => {
   if (url.includes('embed/')) return url;
   
   if (url.includes('watch?v=')) {
-    // Strip out extra query parameters if present (like &t=12s)
     const videoId = url.split('watch?v=')[1]?.split('&')[0];
     return `https://www.youtube.com/embed/${videoId}`;
   }
@@ -80,13 +79,9 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Active view switcher inside admin: 'builder' or 'manage'
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
-
-  // Inline canvas active modal popup state ('image' | 'text' | 'grid' | 'video' | null)
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
 
-  // CMS Form States synced with localStorage
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem('deephook_portfolio_works');
     if (saved) {
@@ -118,9 +113,24 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [imageUrl, setImageUrl] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [galleryInput, setGalleryInput] = useState('');
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const galleryArray = galleryInput ? galleryInput.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  const handleAddGalleryUrl = () => {
+    if (!newGalleryUrl.trim()) return;
+    const updated = [...galleryArray, newGalleryUrl.trim()];
+    setGalleryInput(updated.join(', '));
+    setNewGalleryUrl('');
+  };
+
+  const handleRemoveGalleryUrl = (indexToRemove: number) => {
+    const updated = galleryArray.filter((_, idx) => idx !== indexToRemove);
+    setGalleryInput(updated.join(', '));
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,7 +199,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
               description,
               imageUrl,
               youtubeUrl: formattedYoutubeUrl,
-              gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
+              gallery: galleryArray
             }
           : p
       );
@@ -204,7 +214,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
         description,
         imageUrl,
         youtubeUrl: formattedYoutubeUrl,
-        gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
+        gallery: galleryArray
       };
       saveProjectsToStorage([newProject, ...projects]);
       setSuccessMessage('Project successfully published to portfolio!');
@@ -277,61 +287,110 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           {activeTab === 'builder' ? (
             <>
               {/* Central Canvas Preview / Builder Area */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '30px 20px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
                 
                 {editingId !== null && (
-                  <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px' }}>
+                  <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px', flexShrink: 0 }}>
                     <span style={{ fontSize: '0.8rem', color: '#ffc107' }}>Editing Mode Active (Project ID: {editingId})</span>
                     <button onClick={handleCancelEdit} style={{ background: 'transparent', border: 'none', color: '#ffc107', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}>Cancel Edit</button>
                   </div>
                 )}
 
-                <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', marginBottom: '32px' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 400, color: '#aaa', letterSpacing: '0.05em', margin: '0 0 24px 0' }}>
+                <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', marginBottom: '24px', flexShrink: 0 }}>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 400, color: '#aaa', letterSpacing: '0.05em', margin: '0 0 16px 0' }}>
                     {title ? `Live Preview: "${title}"` : 'Start building your project:'}
                   </h3>
                   
                   {/* Interactive Canvas Action Buttons */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                     
-                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🖼️</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Image</span>
+                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>🖼️</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Image</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>T</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
+                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>T</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>⊞</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
+                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>⊞</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>▶</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
+                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>▶</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
                     </div>
 
                   </div>
                 </div>
 
-                {/* Live Card Preview Box */}
-                {imageUrl && (
-                  <div style={{ width: '100%', maxWidth: '420px', background: '#141419', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', overflow: 'hidden', padding: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                    <div style={{ width: '100%', height: aspectRatio === '1:1' ? '280px' : '420px', background: '#000', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px' }}>
-                      <img src={imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <h4 style={{ margin: '0 0 6px 0', fontSize: '0.9rem', color: '#fff' }}>{title || 'Untitled Project'}</h4>
-                    <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', color: '#aaa' }}>{category}</span>
+                {/* SCROLLABLE CANVAS CONTAINER FRAME (Fixed height viewport with custom vertical scrollbar) */}
+                <div style={{ width: '100%', maxWidth: '600px', height: '520px', background: '#141419', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', overflowY: 'auto', padding: '32px 24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', gap: '28px', boxSizing: 'border-box', marginBottom: '40px', scrollbarWidth: 'thin', scrollbarColor: '#444 #141419' }}>
+                  
+                  {/* Title Preview Component */}
+                  <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                    <h2 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#fff', letterSpacing: '0.05em', margin: 0, textTransform: 'uppercase' }}>
+                      {title || 'VISUAL CONTENT CREATION FOR SILVER JEWELRY BRAND'}
+                    </h2>
                   </div>
-                )}
+
+                  {/* Photo Grid / Gallery Carousel Component */}
+                  <div style={{ flexShrink: 0 }}>
+                    <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Gallery / Photo Grid Component</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', background: '#0a0a0c', padding: '6px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {(galleryArray.length > 0 ? galleryArray : [imageUrl || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop']).slice(0, 5).map((imgSrc, idx) => (
+                        <div key={idx} style={{ aspectRatio: '3/4', background: '#000', borderRadius: '4px', overflow: 'hidden' }}>
+                          <img src={imgSrc} alt="Gallery item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Video Embed Component */}
+                  <div style={{ flexShrink: 0 }}>
+                    <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Video & Audio Preview Component</span>
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      {youtubeUrl ? (
+                        <iframe
+                          src={getAdminPreviewUrl(youtubeUrl)}
+                          title="Live Video Component Preview"
+                          style={{ width: '100%', height: '100%', border: 'none' }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1c1c24', color: '#888', gap: '8px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>▶</div>
+                          <span style={{ fontSize: '0.75rem' }}>No YouTube video link attached</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description & Text Component */}
+                  <div style={{ flexShrink: 0 }}>
+                    <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Description & Content Component</span>
+                    <div style={{ background: '#0a0a0c', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#ccc', lineHeight: '1.6', margin: '0 0 12px 0', whiteSpace: 'pre-line' }}>
+                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week. The objective was to create high-end, fashion-oriented content that reflects the elegance of the jewelry while aligning with international industry standards.'}
+                      </p>
+                      {youtubeUrl && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', wordBreak: 'break-all' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#3b82f6', textDecoration: 'underline' }}>{youtubeUrl}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
 
                 {/* INLINE CANVAS POPUP MODALS FOR EACH BUTTON */}
                 {activeModal && (
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative' }}>
+                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: activeModal === 'grid' ? '560px' : '480px', maxH: '90vh', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
                       
                       <button 
                         onClick={() => setActiveModal(null)} 
@@ -379,17 +438,62 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       )}
 
                       {activeModal === 'grid' && (
-                        <div>
-                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Photo Grid Gallery</h4>
-                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Add extra showcase images separated by commas.</p>
-                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Gallery URLs (comma-separated)</label>
-                          <input 
-                            type="text" 
-                            value={galleryInput} 
-                            onChange={(e) => setGalleryInput(e.target.value)} 
-                            placeholder="https://img1.jpg, https://img2.jpg" 
-                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
-                          />
+                        <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#fff' }}>Configure Photo Grid Gallery</h4>
+                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 16px 0' }}>Add individual image links with live thumbnail previews.</p>
+                          
+                          {/* Add link section */}
+                          <div style={{ background: '#1c1c24', padding: '12px', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.2)', marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontSize: '0.7rem', color: '#ccc', marginBottom: '6px' }}>New Gallery Image URL</label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <input 
+                                type="text" 
+                                value={newGalleryUrl} 
+                                onChange={(e) => setNewGalleryUrl(e.target.value)} 
+                                placeholder="https://ik.imagekit.io/..." 
+                                style={{ flex: 1, background: '#111', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', padding: '8px 10px', fontSize: '0.8rem', color: '#fff', outline: 'none' }}
+                              />
+                              <button 
+                                type="button" 
+                                onClick={handleAddGalleryUrl}
+                                style={{ padding: '8px 14px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer' }}
+                              >
+                                Add
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Uploaded items list */}
+                          <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px', marginBottom: '16px' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 500 }}>Attached Links ({galleryArray.length})</span>
+                            {galleryArray.length === 0 ? (
+                              <div style={{ textAlign: 'center', padding: '20px', color: '#666', fontSize: '0.75rem' }}>No gallery items added yet.</div>
+                            ) : (
+                              galleryArray.map((url, idx) => (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#1c1c24', padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                  <div style={{ width: '36px', height: '36px', borderRadius: '4px', overflow: 'hidden', background: '#000', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <img src={url} alt="Thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                                  </div>
+                                  <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.75rem', color: '#ddd' }}>
+                                    {url}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveGalleryUrl(idx)}
+                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                                    title="Remove"
+                                  >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="3 6 5 6 21 6"></polyline>
+                                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                  </button>
+                                </div>
+                              ))
+                            )}
+                          </div>
                         </div>
                       )}
 
@@ -421,7 +525,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
               </div>
 
-              {/* Right-Hand Inspector / Config Sidebar (Main Project Meta & Publish Control) */}
+              {/* Right-Hand Inspector / Config Sidebar */}
               <div style={{ width: '360px', background: '#121216', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '24px', flexShrink: 0 }}>
                 <h4 style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.1em', color: '#888', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Project Settings</h4>
 
@@ -489,21 +593,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
-                  
-                  {youtubeUrl && (
-        <div style={{ marginTop: '12px' }}>
-          <span style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Live Playback Preview:</span>
-          <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)' }}>
-            <iframe
-              src={getAdminPreviewUrl(youtubeUrl)}
-              title="Admin Video Preview"
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      )}
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
@@ -517,14 +606,29 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Gallery URLs (comma-separated)</label>
-                    <input 
-                      type="text" 
-                      value={galleryInput}
-                      onChange={(e) => setGalleryInput(e.target.value)}
-                      placeholder="url1.jpg, url2.jpg" 
-                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                    />
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Gallery Images ({galleryArray.length} attached)</label>
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal('grid')}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        background: '#1c1c24',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '0.8rem',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <span>{galleryArray.length > 0 ? `${galleryArray.length} image link(s) configured` : 'Configure gallery images...'}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#888' }}>Manage ↗</span>
+                    </button>
                   </div>
 
                   {error && <p style={{ fontSize: '0.75rem', color: '#ff5c5c', margin: 0 }}>{error}</p>}
@@ -653,7 +757,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           </button>
         </form>
       </div>
-      <div style={{ position: 'relative', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: '1' }} />
     </div>
   );
 }
