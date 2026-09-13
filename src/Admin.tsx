@@ -26,54 +26,7 @@ function FloatingPathsBackground({ position }: { position: number }) {
       684 - i * 5 * position
     } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
     width: 0.5 + i * 0.03,
-  }
-
-export default function Admin() {
-  // 1. All your states go here
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  // 2. Your check-auth useEffect on mount
-  useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  // 3. Your beforeunload useEffect
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!hasUnsavedChanges) return;
-      e.preventDefault();
-      e.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [hasUnsavedChanges]);
-
-  // 4. Your helper functions (handleLogin, handleSave, etc.)
-  const handleLogin = (password: string) => {
-    setIsAuthenticated(true);
-    localStorage.setItem('admin_authenticated', 'true');
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('admin_authenticated');
-  };
-
-  const handleFieldChange = () => {
-    setHasUnsavedChanges(true);
-  };
-
-  const handleSave = () => {
-    setHasUnsavedChanges(false);
-  };
-
+  }));
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
@@ -108,6 +61,80 @@ export default function Admin() {
   );
 }
 
+export default function Admin() {
+  // 1. All your states go here
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // 2. Your check-auth useEffect on mount
+  useEffect(() => {
+    const authStatus = localStorage.getItem('admin_authenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // 3. Your beforeunload useEffect
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // 4. Your helper functions (handleLogin, handleLogout, handleSave, etc.)
+  const handleLogin = (password: string) => {
+    setIsAuthenticated(true);
+    localStorage.setItem('admin_authenticated', 'true');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('admin_authenticated');
+  };
+
+  const handleFieldChange = () => {
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSave = () => {
+    setHasUnsavedChanges(false);
+  };
+
+  return (
+    <div style={{ position: 'relative', minHeight: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', fontFamily: 'system-ui, sans-serif' }}>
+      <FloatingPathsBackground position={1} />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '500px', padding: '40px', background: '#121216', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px' }}>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 500, marginBottom: '16px', letterSpacing: '0.1em' }}>DEEPHOOK ADMIN CMS</h2>
+        <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '24px' }}>
+          {isAuthenticated ? 'Authenticated & Session Cached.' : 'Please log in to manage your portfolio content.'}
+        </p>
+        {isAuthenticated ? (
+          <button 
+            onClick={handleLogout}
+            style={{ padding: '10px 20px', background: '#fff', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+          >
+            Log Out
+          </button>
+        ) : (
+          <button 
+            onClick={() => handleLogin('byebyeBrain')}
+            style={{ padding: '10px 20px', background: '#fff', color: '#000', border: 'none', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+          >
+            Simulate Login
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 interface Project {
   id: string;
   title: string;
@@ -124,7 +151,25 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('admin_authenticated') === 'true';
+  });
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Unsaved changes warning listener
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
 
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
@@ -172,11 +217,13 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     const updated = [...galleryArray, newGalleryUrl.trim()];
     setGalleryInput(updated.join(', '));
     setNewGalleryUrl('');
+    setHasUnsavedChanges(true);
   };
 
   const handleRemoveGalleryUrl = (indexToRemove: number) => {
     const updated = galleryArray.filter((_, idx) => idx !== indexToRemove);
     setGalleryInput(updated.join(', '));
+    setHasUnsavedChanges(true);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -193,10 +240,16 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
     if (isMasterKey || isValidUser) {
       setIsAuthenticated(true);
+      localStorage.setItem('admin_authenticated', 'true');
       setError(null);
     } else {
       setError('Invalid email or password. Please try again.');
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('admin_authenticated');
   };
 
   const handleEditProject = (project: Project) => {
@@ -274,6 +327,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setYoutubeUrl('');
     setGalleryInput('');
     setError(null);
+    setHasUnsavedChanges(false);
     setTimeout(() => setSuccessMessage(null), 4000);
   };
 
@@ -320,7 +374,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
               ← Return to Site
             </button>
             <button 
-              onClick={() => setIsAuthenticated(false)}
+              onClick={handleLogout}
               style={{ padding: '8px 16px', background: '#1c1c24', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}
             >
               Log Out
@@ -351,22 +405,22 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   {/* Interactive Canvas Action Buttons */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                     
-                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                       <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>🖼️</div>
                       <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Image</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                       <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>T</div>
                       <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                       <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>⊞</div>
                       <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                       <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>▶</div>
                       <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
                     </div>
@@ -374,7 +428,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
                 </div>
 
-                {/* SCROLLABLE CANVAS CONTAINER FRAME (Fixed height viewport with custom vertical scrollbar) */}
+                {/* SCROLLABLE CANVAS CONTAINER FRAME */}
                 <div style={{ width: '100%', maxWidth: '600px', height: '520px', background: '#141419', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', overflowY: 'auto', padding: '32px 24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', gap: '28px', boxSizing: 'border-box', marginBottom: '40px', scrollbarWidth: 'thin', scrollbarColor: '#444 #141419' }}>
                   
                   {/* Title Preview Component */}
@@ -422,22 +476,17 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Description & Content Component</span>
                     <div style={{ background: '#0a0a0c', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <p style={{ fontSize: '0.75rem', color: '#ccc', lineHeight: '1.6', margin: '0 0 12px 0', whiteSpace: 'pre-line' }}>
-                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week. The objective was to create high-end, fashion-oriented content that reflects the elegance of the jewelry while aligning with international industry standards.'}
+                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week.'}
                       </p>
-                      {youtubeUrl && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', wordBreak: 'break-all' }}>
-                          <span style={{ fontSize: '0.7rem', color: '#3b82f6', textDecoration: 'underline' }}>{youtubeUrl}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
 
                 </div>
 
-                {/* INLINE CANVAS POPUP MODALS FOR EACH BUTTON */}
+                {/* MODALS */}
                 {activeModal && (
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: activeModal === 'grid' ? '560px' : '480px', maxH: '90vh', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: activeModal === 'grid' ? '560px' : '480px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
                       
                       <button 
                         onClick={() => setActiveModal(null)} 
@@ -449,12 +498,10 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       {activeModal === 'image' && (
                         <div>
                           <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Thumbnail Image</h4>
-                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Paste the main image URL for your project card display.</p>
-                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Image URL</label>
                           <input 
                             type="text" 
                             value={imageUrl} 
-                            onChange={(e) => setImageUrl(e.target.value)} 
+                            onChange={(e) => { setImageUrl(e.target.value); setHasUnsavedChanges(true); }} 
                             placeholder="https://images.unsplash.com/..." 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
                           />
@@ -464,22 +511,19 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       {activeModal === 'text' && (
                         <div>
                           <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Project Title & Description</h4>
-                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Set the headline title and detailed overview text.</p>
-                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Project Title</label>
                           <input 
                             type="text" 
                             value={title} 
-                            onChange={(e) => setTitle(e.target.value)} 
-                            placeholder="VISUAL CONTENT CREATION..." 
+                            onChange={(e) => { setTitle(e.target.value); setHasUnsavedChanges(true); }} 
+                            placeholder="Title..." 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '14px' }}
                           />
-                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
                           <textarea 
                             value={description} 
-                            onChange={(e) => setDescription(e.target.value)} 
-                            placeholder="Project breakdown..." 
+                            onChange={(e) => { setDescription(e.target.value); setHasUnsavedChanges(true); }} 
+                            placeholder="Description..." 
                             rows={3} 
-                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px', resize: 'vertical' }}
+                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
                           />
                         </div>
                       )}
@@ -487,73 +531,47 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       {activeModal === 'grid' && (
                         <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
                           <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#fff' }}>Configure Photo Grid Gallery</h4>
-                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 16px 0' }}>Add individual image links with live thumbnail previews.</p>
-                          
-                          {/* Add link section */}
-                          <div style={{ background: '#1c1c24', padding: '12px', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.2)', marginBottom: '16px' }}>
-                            <label style={{ display: 'block', fontSize: '0.7rem', color: '#ccc', marginBottom: '6px' }}>New Gallery Image URL</label>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <input 
-                                type="text" 
-                                value={newGalleryUrl} 
-                                onChange={(e) => setNewGalleryUrl(e.target.value)} 
-                                placeholder="https://ik.imagekit.io/..." 
-                                style={{ flex: 1, background: '#111', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', padding: '8px 10px', fontSize: '0.8rem', color: '#fff', outline: 'none' }}
-                              />
-                              <button 
-                                type="button" 
-                                onClick={handleAddGalleryUrl}
-                                style={{ padding: '8px 14px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer' }}
-                              >
-                                Add
-                              </button>
-                            </div>
+                          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                            <input 
+                              type="text" 
+                              value={newGalleryUrl} 
+                              onChange={(e) => setNewGalleryUrl(e.target.value)} 
+                              placeholder="Image URL..." 
+                              style={{ flex: 1, background: '#111', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', padding: '8px 10px', fontSize: '0.8rem', color: '#fff', outline: 'none' }}
+                            />
+                            <button 
+                              type="button" 
+                              onClick={handleAddGalleryUrl}
+                              style={{ padding: '8px 14px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
+                            >
+                              Add
+                            </button>
                           </div>
-
-                          {/* Uploaded items list */}
-                          <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px', marginBottom: '16px' }}>
-                            <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 500 }}>Attached Links ({galleryArray.length})</span>
-                            {galleryArray.length === 0 ? (
-                              <div style={{ textAlign: 'center', padding: '20px', color: '#666', fontSize: '0.75rem' }}>No gallery items added yet.</div>
-                            ) : (
-                              galleryArray.map((url, idx) => (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#1c1c24', padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                  <div style={{ width: '36px', height: '36px', borderRadius: '4px', overflow: 'hidden', background: '#000', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <img src={url} alt="Thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
-                                  </div>
-                                  <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.75rem', color: '#ddd' }}>
-                                    {url}
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveGalleryUrl(idx)}
-                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
-                                    title="Remove"
-                                  >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <polyline points="3 6 5 6 21 6"></polyline>
-                                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                      <line x1="10" y1="11" x2="10" y2="17"></line>
-                                      <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                  </button>
-                                </div>
-                              ))
-                            )}
+                          <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                            {galleryArray.map((url, idx) => (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#1c1c24', padding: '8px 10px', borderRadius: '8px' }}>
+                                <span style={{ flex: 1, fontSize: '0.75rem', color: '#ddd', overflow: 'hidden', textOverflow: 'ellipsis' }}>{url}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveGalleryUrl(idx)}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       )}
 
                       {activeModal === 'video' && (
                         <div>
-                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Video & Audio Link</h4>
-                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Attach a YouTube video link or embedded media source.</p>
-                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>YouTube URL</label>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Video URL</h4>
                           <input 
                             type="text" 
                             value={youtubeUrl} 
-                            onChange={(e) => setYoutubeUrl(e.target.value)} 
-                            placeholder="https://www.youtube.com/watch?v=..." 
+                            onChange={(e) => { setYoutubeUrl(e.target.value); setHasUnsavedChanges(true); }} 
+                            placeholder="YouTube URL..." 
                             style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
                           />
                         </div>
@@ -563,7 +581,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                         onClick={() => setActiveModal(null)} 
                         style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', border: 'none' }}
                       >
-                        Done / Apply to Canvas
+                        Done
                       </button>
 
                     </div>
@@ -582,40 +600,26 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <input 
                       type="text" 
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. VISUAL CONTENT FOR JEWELRY" 
+                      onChange={(e) => { setTitle(e.target.value); setHasUnsavedChanges(true); }}
+                      placeholder="Title..." 
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                       required
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Category</label>
-                      <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 8px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                      >
-                        <option value="Banner">Banner</option>
-                        <option value="Logo">Logo</option>
-                        <option value="Sticker">Sticker</option>
-                        <option value="Flyer">Flyer</option>
-                        <option value="Brand Identity">Brand Identity</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Preview Ratio</label>
-                      <select
-                        value={aspectRatio}
-                        onChange={(e) => setAspectRatio(e.target.value as '1:1' | '9:16')}
-                        style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 8px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                      >
-                        <option value="1:1">1:1 Square</option>
-                        <option value="9:16">9:16 Vertical</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Category</label>
+                    <select
+                      value={category}
+                      onChange={(e) => { setCategory(e.target.value); setHasUnsavedChanges(true); }}
+                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 8px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                    >
+                      <option value="Banner">Banner</option>
+                      <option value="Logo">Logo</option>
+                      <option value="Sticker">Sticker</option>
+                      <option value="Flyer">Flyer</option>
+                      <option value="Brand Identity">Brand Identity</option>
+                    </select>
                   </div>
 
                   <div>
@@ -623,8 +627,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <input 
                       type="text" 
                       value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      placeholder="https://images.unsplash.com/..." 
+                      onChange={(e) => { setImageUrl(e.target.value); setHasUnsavedChanges(true); }}
+                      placeholder="Image URL..." 
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                       required
                     />
@@ -635,8 +639,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <input 
                       type="text" 
                       value={youtubeUrl}
-                      onChange={(e) => setYoutubeUrl(e.target.value)}
-                      placeholder="https://www.youtube.com/watch?v=..." 
+                      onChange={(e) => { setYoutubeUrl(e.target.value); setHasUnsavedChanges(true); }}
+                      placeholder="YouTube URL..." 
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
@@ -645,44 +649,18 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
                     <textarea 
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Project background and overview..." 
+                      onChange={(e) => { setDescription(e.target.value); setHasUnsavedChanges(true); }}
+                      placeholder="Description..." 
                       rows={3}
-                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Gallery Images ({galleryArray.length} attached)</label>
-                    <button
-                      type="button"
-                      onClick={() => setActiveModal('grid')}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        background: '#1c1c24',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        borderRadius: '8px',
-                        color: '#fff',
-                        fontSize: '0.8rem',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        boxSizing: 'border-box'
-                      }}
-                    >
-                      <span>{galleryArray.length > 0 ? `${galleryArray.length} image link(s) configured` : 'Configure gallery images...'}</span>
-                      <span style={{ fontSize: '0.7rem', color: '#888' }}>Manage ↗</span>
-                    </button>
                   </div>
 
                   {error && <p style={{ fontSize: '0.75rem', color: '#ff5c5c', margin: 0 }}>{error}</p>}
 
                   <button 
                     type="submit"
-                    style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', border: 'none', marginTop: '10px', letterSpacing: '0.05em' }}
+                    style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', border: 'none', marginTop: '10px' }}
                   >
                     {editingId !== null ? 'Save Changes' : 'Publish Project'}
                   </button>
@@ -702,10 +680,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       </div>
                       <div>
                         <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 500, color: '#fff' }}>{project.title}</h4>
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                          <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: '4px', color: '#bbb' }}>{project.category}</span>
-                          <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', color: '#888' }}>Ratio: {project.aspectRatio}</span>
-                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
