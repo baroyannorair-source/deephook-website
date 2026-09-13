@@ -64,6 +64,9 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Active view switcher inside admin: 'builder' or 'manage'
+  const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
+
   // CMS Form States synced with localStorage
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem('deephook_portfolio_works');
@@ -98,12 +101,10 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [galleryInput, setGalleryInput] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Track the ID of the project currently being edited
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const validAdmins = [
       { email: 'baroyannorair@gmail.com', pass: 'byebyeBrain' },
       { email: 'deephook.agency@gmail.com', pass: 'byebyeBrain' }
@@ -131,7 +132,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setImageUrl(project.imageUrl);
     setYoutubeUrl(project.youtubeUrl);
     setGalleryInput(project.gallery ? project.gallery.join(', ') : '');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setActiveTab('builder');
   };
 
   const handleCancelEdit = () => {
@@ -152,7 +153,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       return;
     }
 
-    // Automatically format standard YouTube watch links to embed format
     const formattedYoutubeUrl = youtubeUrl.includes('watch?v=')
       ? youtubeUrl.replace('watch?v=', 'embed/')
       : youtubeUrl.includes('youtu.be/')
@@ -160,7 +160,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       : youtubeUrl;
 
     if (editingId !== null) {
-      // Update existing project
       const updatedProjects = projects.map(p => 
         p.id === editingId 
           ? {
@@ -178,7 +177,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       saveProjectsToStorage(updatedProjects);
       setSuccessMessage('Project successfully updated!');
     } else {
-      // Add new project
       const newProject: Project = {
         id: Date.now().toString(),
         title,
@@ -193,7 +191,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       setSuccessMessage('Project successfully published to portfolio!');
     }
     
-    // Reset form state
     setEditingId(null);
     setTitle('');
     setDescription('');
@@ -206,185 +203,252 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   const handleDeleteProject = (id: string) => {
     saveProjectsToStorage(projects.filter(p => p.id !== id));
-    if (editingId === id) {
-      handleCancelEdit();
-    }
+    if (editingId === id) handleCancelEdit();
   };
 
   if (isAuthenticated) {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflowY: 'auto', background: '#050505', color: '#fff', padding: '40px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: '#0a0a0c', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
         <FloatingPathsBackground position={1} />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '960px', margin: '0 auto' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
-            <div>
-              <h1 style={{ fontSize: '1.25rem', fontWeight: 600, letterSpacing: '0.15em', margin: 0 }}>DEEPHOOK AGENCY CMS</h1>
-              <p style={{ color: '#888', fontSize: '0.85rem', margin: '4px 0 0 0' }}>Portfolio Manager & Uploader</p>
+
+        {/* Top Header Navigation Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: '#121216', borderBottom: '1px solid rgba(255,255,255,0.08)', zIndex: 10, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.15em', color: '#fff' }}>DEEPHOOK AGENCY CMS</span>
+            <div style={{ display: 'flex', background: '#1c1c24', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <button
+                onClick={() => setActiveTab('builder')}
+                style={{ padding: '6px 16px', background: activeTab === 'builder' ? '#272733' : 'transparent', color: activeTab === 'builder' ? '#fff' : '#888', border: 'none', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Project Builder
+              </button>
+              <button
+                onClick={() => setActiveTab('manage')}
+                style={{ padding: '6px 16px', background: activeTab === 'manage' ? '#272733' : 'transparent', color: activeTab === 'manage' ? '#fff' : '#888', border: 'none', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Manage Works ({projects.length})
+              </button>
             </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {successMessage && (
+              <span style={{ fontSize: '0.75rem', color: '#4cd964', background: 'rgba(76,217,100,0.1)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(76,217,100,0.2)' }}>
+                {successMessage}
+              </span>
+            )}
+            <button 
+              onClick={onReturn}
+              style={{ padding: '8px 16px', background: 'transparent', color: '#bbb', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}
+            >
+              ← Return to Site
+            </button>
             <button 
               onClick={() => setIsAuthenticated(false)}
-              style={{ padding: '10px 20px', background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}
+              style={{ padding: '8px 16px', background: '#1c1c24', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}
             >
               Log Out
             </button>
           </div>
+        </div>
 
-          {successMessage && (
-            <div style={{ background: 'rgba(40, 167, 69, 0.2)', border: '1px solid rgba(40, 167, 69, 0.4)', color: '#4cd964', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', fontSize: '0.85rem' }}>
-              {successMessage}
-            </div>
-          )}
+        {/* Main Workspace Area */}
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+          
+          {activeTab === 'builder' ? (
+            <>
+              {/* Central Canvas Preview / Builder Area */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10' }}>
+                
+                {editingId !== null && (
+                  <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#ffc107' }}>Editing Mode Active (Project ID: {editingId})</span>
+                    <button onClick={handleCancelEdit} style={{ background: 'transparent', border: 'none', color: '#ffc107', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}>Cancel Edit</button>
+                  </div>
+                )}
 
-          {/* Project Upload / Edit Form */}
-          <div style={{ background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', padding: '32px', borderRadius: '16px', marginBottom: '40px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: 0, textTransform: 'uppercase' }}>
-                {editingId !== null ? 'Edit Portfolio Work' : 'Upload New Portfolio Work'}
-              </h2>
-              {editingId !== null && (
-                <button 
-                  type="button"
-                  onClick={handleCancelEdit}
-                  style={{ background: 'transparent', color: '#888', border: '1px solid rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
-                >
-                  Cancel Edit
-                </button>
-              )}
-            </div>
-            
-            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Project Title</label>
-                  <input 
-                    type="text" 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. VISUAL CONTENT FOR JEWELRY BRAND" 
-                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Category Tag</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                  >
-                    <option value="Banner">Banner</option>
-                    <option value="Logo">Logo</option>
-                    <option value="Sticker">Sticker</option>
-                    <option value="Flyer">Flyer</option>
-                    <option value="Brand Identity">Brand Identity</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Preview Ratio</label>
-                  <select
-                    value={aspectRatio}
-                    onChange={(e) => setAspectRatio(e.target.value as '1:1' | '9:16')}
-                    style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                  >
-                    <option value="1:1">1:1 Square</option>
-                    <option value="9:16">9:16 Vertical</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Main Thumbnail Image URL</label>
-                <input 
-                  type="text" 
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..." 
-                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>YouTube Video Link / Embed URL</label>
-                <input 
-                  type="text" 
-                  value={youtubeUrl}
-                  onChange={(e) => setYoutubeUrl(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..." 
-                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Detailed Description / Project Info</label>
-                <textarea 
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Write project background, client overview, and execution notes..." 
-                  rows={4}
-                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Modal Gallery Image URLs (comma-separated)</label>
-                <input 
-                  type="text" 
-                  value={galleryInput}
-                  onChange={(e) => setGalleryInput(e.target.value)}
-                  placeholder="https://img1.com/a.jpg, https://img2.com/b.jpg" 
-                  style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <button 
-                type="submit"
-                style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', border: 'none', letterSpacing: '0.05em', marginTop: '8px' }}
-              >
-                {editingId !== null ? 'Save Changes' : 'Publish Project to Website'}
-              </button>
-            </form>
-          </div>
-
-          {/* Existing Projects List */}
-          <div>
-            <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 16px 0', textTransform: 'uppercase' }}>Manage Uploaded Projects ({projects.length})</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {projects.map((project) => (
-                <div key={project.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(15, 15, 15, 0.9)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px 20px', borderRadius: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ width: '56px', height: '56px', background: '#222', borderRadius: '6px', overflow: 'hidden', flexShrink: 0 }}>
-                      <img src={project.imageUrl} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 400, color: '#aaa', letterSpacing: '0.05em', margin: '0 0 24px 0' }}>
+                    {title ? `Live Preview: "${title}"` : 'Start building your project:'}
+                  </h3>
+                  
+                  {/* Quick Clickable Insert Toolbar Nodes */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
+                    <div onClick={() => document.getElementById('imageUrlInput')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'border-color 0.2s' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🖼️</div>
+                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Image</span>
                     </div>
+                    <div onClick={() => document.getElementById('titleInput')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>T</div>
+                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
+                    </div>
+                    <div onClick={() => document.getElementById('galleryInputBox')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>⊞</div>
+                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
+                    </div>
+                    <div onClick={() => document.getElementById('youtubeUrlInput')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>▶</div>
+                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Card Preview Box */}
+                {imageUrl && (
+                  <div style={{ width: '100%', maxWidth: '420px', background: '#141419', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', overflow: 'hidden', padding: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                    <div style={{ width: '100%', height: aspectRatio === '1:1' ? '280px' : '420px', background: '#000', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px' }}>
+                      <img src={imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '0.9rem', color: '#fff' }}>{title || 'Untitled Project'}</h4>
+                    <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', color: '#aaa' }}>{category}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right-Hand Inspector / Config Sidebar */}
+              <div style={{ width: '360px', background: '#121216', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '24px', flexShrink: 0 }}>
+                <h4 style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.1em', color: '#888', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Project Settings</h4>
+
+                <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Project Title</label>
+                    <input 
+                      id="titleInput"
+                      type="text" 
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g. VISUAL CONTENT FOR JEWELRY" 
+                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     <div>
-                      <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500 }}>{project.title}</h4>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                        <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>{project.category}</span>
-                        <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', padding: '2px 6px', borderRadius: '4px', color: '#aaa' }}>Ratio: {project.aspectRatio}</span>
+                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Category</label>
+                      <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 8px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                      >
+                        <option value="Banner">Banner</option>
+                        <option value="Logo">Logo</option>
+                        <option value="Sticker">Sticker</option>
+                        <option value="Flyer">Flyer</option>
+                        <option value="Brand Identity">Brand Identity</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Preview Ratio</label>
+                      <select
+                        value={aspectRatio}
+                        onChange={(e) => setAspectRatio(e.target.value as '1:1' | '9:16')}
+                        style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 8px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                      >
+                        <option value="1:1">1:1 Square</option>
+                        <option value="9:16">9:16 Vertical</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Main Thumbnail Image URL</label>
+                    <input 
+                      id="imageUrlInput"
+                      type="text" 
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="https://images.unsplash.com/..." 
+                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>YouTube Link</label>
+                    <input 
+                      id="youtubeUrlInput"
+                      type="text" 
+                      value={youtubeUrl}
+                      onChange={(e) => setYoutubeUrl(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=..." 
+                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
+                    <textarea 
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Project background and overview..." 
+                      rows={3}
+                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Gallery URLs (comma-separated)</label>
+                    <input 
+                      id="galleryInputBox"
+                      type="text" 
+                      value={galleryInput}
+                      onChange={(e) => setGalleryInput(e.target.value)}
+                      placeholder="url1.jpg, url2.jpg" 
+                      style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  {error && <p style={{ fontSize: '0.75rem', color: '#ff5c5c', margin: 0 }}>{error}</p>}
+
+                  <button 
+                    type="submit"
+                    style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer', border: 'none', marginTop: '10px', letterSpacing: '0.05em' }}
+                  >
+                    {editingId !== null ? 'Save Changes' : 'Publish Project'}
+                  </button>
+                </form>
+              </div>
+            </>
+          ) : (
+            /* Manage Existing Projects View */
+            <div style={{ flex: 1, overflowY: 'auto', padding: '40px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Manage Uploaded Projects ({projects.length})</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {projects.map((project) => (
+                  <div key={project.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#121216', border: '1px solid rgba(255,255,255,0.08)', padding: '16px 20px', borderRadius: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '56px', height: '56px', background: '#222', borderRadius: '6px', overflow: 'hidden', flexShrink: 0 }}>
+                        <img src={project.imageUrl} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 500, color: '#fff' }}>{project.title}</h4>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                          <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: '4px', color: '#bbb' }}>{project.category}</span>
+                          <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', color: '#888' }}>Ratio: {project.aspectRatio}</span>
+                        </div>
                       </div>
                     </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={() => handleEditProject(project)}
+                        style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
+                      >
+                        Edit in Builder
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteProject(project.id)}
+                        style={{ background: 'transparent', color: '#ff5c5c', border: '1px solid rgba(255,92,92,0.3)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      onClick={() => handleEditProject(project)}
-                      style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteProject(project.id)}
-                      style={{ background: 'transparent', color: '#ff5c5c', border: '1px solid rgba(255,92,92,0.3)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>
@@ -392,7 +456,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', background: '#050505', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', minHeight: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', overflow: 'hidden' }}>
       <FloatingPathsBackground position={1} />
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
@@ -405,31 +469,31 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
         </button>
       </div>
 
-      <div style={{ maxWidth: '420px', width: '100%', margin: 'auto', background: 'rgba(18, 18, 18, 0.9)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', padding: '40px 32px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)', position: 'relative', zIndex: 1 }}>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 500, letterSpacing: '0.12em', textAlign: 'center', margin: '0 0 8px 0', textTransform: 'uppercase' }}>Admin Portal</h2>
+      <div style={{ maxWidth: '400px', width: '100%', margin: 'auto', background: '#121216', border: '1px solid rgba(255,255,255,0.08)', padding: '40px 32px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)', position: 'relative', zIndex: 1 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0.12em', textAlign: 'center', margin: '0 0 8px 0', textTransform: 'uppercase' }}>Admin Portal</h2>
         <p style={{ fontSize: '0.75rem', color: '#777', textAlign: 'center', margin: '0 0 28px 0', letterSpacing: '0.05em' }}>Enter your agency credentials</p>
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Email / Username</label>
+            <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '6px', letterSpacing: '0.05em' }}>Email / Username</label>
             <input 
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="baroyannorair@gmail.com" 
-              style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Password</label>
+            <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '6px', letterSpacing: '0.05em' }}>Password</label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input 
                 type={showPassword ? 'text' : 'password'} 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password..." 
-                style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '12px 42px 12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px 42px 12px 14px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                 required
               />
               <button
