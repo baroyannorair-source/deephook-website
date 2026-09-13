@@ -126,6 +126,13 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       return;
     }
 
+   // Automatically format standard YouTube watch links to embed format
+    const formattedYoutubeUrl = youtubeUrl.includes('watch?v=')
+      ? youtubeUrl.replace('watch?v=', 'embed/')
+      : youtubeUrl.includes('youtu.be/')
+      ? youtubeUrl.replace('youtu.be/', 'www.youtube.com/embed/')
+      : youtubeUrl;
+
     const newProject: Project = {
       id: Date.now().toString(),
       title,
@@ -133,10 +140,10 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
       aspectRatio,
       description,
       imageUrl,
-      youtubeUrl,
+      youtubeUrl: formattedYoutubeUrl,
       gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
     };
-
+    
     saveProjectsToStorage([newProject, ...projects]);
     setTitle('');
     setDescription('');
