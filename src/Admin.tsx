@@ -5,7 +5,6 @@ const getAdminPreviewUrl = (url: string) => {
   if (url.includes('embed/')) return url;
   
   if (url.includes('watch?v=')) {
-    // Strip out extra query parameters if present (like &t=12s)
     const videoId = url.split('watch?v=')[1]?.split('&')[0];
     return `https://www.youtube.com/embed/${videoId}`;
   }
@@ -80,13 +79,9 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Active view switcher inside admin: 'builder' or 'manage'
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
-
-  // Inline canvas active modal popup state ('image' | 'text' | 'grid' | 'video' | null)
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
 
-  // CMS Form States synced with localStorage
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem('deephook_portfolio_works');
     if (saved) {
@@ -291,23 +286,23 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           
           {activeTab === 'builder' ? (
             <>
-              {/* Central Canvas Preview / Builder Area */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
+              {/* Central Canvas Preview / Builder Area with Custom Scroller */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px 20px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
                 
                 {editingId !== null && (
-                  <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px' }}>
+                  <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px', flexShrink: 0 }}>
                     <span style={{ fontSize: '0.8rem', color: '#ffc107' }}>Editing Mode Active (Project ID: {editingId})</span>
                     <button onClick={handleCancelEdit} style={{ background: 'transparent', border: 'none', color: '#ffc107', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}>Cancel Edit</button>
                   </div>
                 )}
 
-                <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', marginBottom: '32px', flexShrink: 0 }}>
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 400, color: '#aaa', letterSpacing: '0.05em', margin: '0 0 24px 0' }}>
                     {title ? `Live Preview: "${title}"` : 'Start building your project:'}
                   </h3>
                   
                   {/* Interactive Canvas Action Buttons */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
                     
                     <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🖼️</div>
@@ -332,16 +327,65 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
                 </div>
 
-                {/* Live Card Preview Box */}
-                {imageUrl && (
-                  <div style={{ width: '100%', maxWidth: '420px', background: '#141419', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', overflow: 'hidden', padding: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                    <div style={{ width: '100%', height: aspectRatio === '1:1' ? '280px' : '420px', background: '#000', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px' }}>
-                      <img src={imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <h4 style={{ margin: '0 0 6px 0', fontSize: '0.9rem', color: '#fff' }}>{title || 'Untitled Project'}</h4>
-                    <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', color: '#aaa' }}>{category}</span>
+                {/* Comprehensive Live Canvas Project Preview Mockup (Matching user screenshot layout) */}
+                <div style={{ width: '100%', maxWidth: '640px', background: '#141419', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', overflow: 'hidden', padding: '32px 24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', gap: '28px', boxSizing: 'border-box', marginBottom: '40px' }}>
+                  
+                  {/* Title Preview Component */}
+                  <div style={{ textAlign: 'center' }}>
+                    <h2 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#fff', letterSpacing: '0.05em', margin: 0, textTransform: 'uppercase' }}>
+                      {title || 'VISUAL CONTENT CREATION FOR SILVER JEWELRY BRAND'}
+                    </h2>
                   </div>
-                )}
+
+                  {/* Photo Grid / Gallery Carousel Component */}
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Gallery / Photo Grid Component</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', background: '#0a0a0c', padding: '6px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {(galleryArray.length > 0 ? galleryArray : [imageUrl || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop']).slice(0, 5).map((imgSrc, idx) => (
+                        <div key={idx} style={{ aspectRatio: '3/4', background: '#000', borderRadius: '4px', overflow: 'hidden' }}>
+                          <img src={imgSrc} alt="Gallery item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Video Embed Component */}
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Video & Audio Preview Component</span>
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      {youtubeUrl ? (
+                        <iframe
+                          src={getAdminPreviewUrl(youtubeUrl)}
+                          title="Live Video Component Preview"
+                          style={{ width: '100%', height: '100%', border: 'none' }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1c1c24', color: '#888', gap: '8px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>▶</div>
+                          <span style={{ fontSize: '0.75rem' }}>No YouTube video link attached</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description & Text Component */}
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Description & Content Component</span>
+                    <div style={{ background: '#0a0a0c', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#ccc', lineHeight: '1.6', margin: '0 0 12px 0', whiteSpace: 'pre-line' }}>
+                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week. The objective was to create high-end, fashion-oriented content that reflects the elegance of the jewelry while aligning with international industry standards.'}
+                      </p>
+                      {youtubeUrl && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', wordBreak: 'break-all' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#3b82f6', textDecoration: 'underline' }}>{youtubeUrl}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
 
                 {/* INLINE CANVAS POPUP MODALS FOR EACH BUTTON */}
                 {activeModal && (
@@ -481,7 +525,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
               </div>
 
-              {/* Right-Hand Inspector / Config Sidebar (Main Project Meta & Publish Control) */}
+              {/* Right-Hand Inspector / Config Sidebar */}
               <div style={{ width: '360px', background: '#121216', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '24px', flexShrink: 0 }}>
                 <h4 style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.1em', color: '#888', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Project Settings</h4>
 
@@ -549,21 +593,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#fff', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
-                  
-                  {youtubeUrl && (
-                    <div style={{ marginTop: '12px' }}>
-                      <span style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Live Playback Preview:</span>
-                      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)' }}>
-                        <iframe
-                          src={getAdminPreviewUrl(youtubeUrl)}
-                          title="Admin Video Preview"
-                          style={{ width: '100%', height: '100%', border: 'none' }}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    </div>
-                  )}
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
