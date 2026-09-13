@@ -67,6 +67,9 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   // Active view switcher inside admin: 'builder' or 'manage'
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
 
+  // Inline canvas active modal popup state ('image' | 'text' | 'grid' | 'video' | null)
+  const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
+
   // CMS Form States synced with localStorage
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem('deephook_portfolio_works');
@@ -258,7 +261,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           {activeTab === 'builder' ? (
             <>
               {/* Central Canvas Preview / Builder Area */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
                 
                 {editingId !== null && (
                   <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px' }}>
@@ -272,24 +275,29 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     {title ? `Live Preview: "${title}"` : 'Start building your project:'}
                   </h3>
                   
-                  {/* Quick Clickable Insert Toolbar Nodes */}
+                  {/* Interactive Canvas Action Buttons */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
-                    <div onClick={() => document.getElementById('imageUrlInput')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'border-color 0.2s' }}>
+                    
+                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🖼️</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Image</span>
                     </div>
-                    <div onClick={() => document.getElementById('titleInput')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+
+                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>T</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
                     </div>
-                    <div onClick={() => document.getElementById('galleryInputBox')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+
+                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>⊞</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
                     </div>
-                    <div onClick={() => document.getElementById('youtubeUrlInput')?.focus()} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+
+                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>▶</div>
                       <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
                     </div>
+
                   </div>
                 </div>
 
@@ -303,9 +311,101 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', color: '#aaa' }}>{category}</span>
                   </div>
                 )}
+
+                {/* INLINE CANVAS POPUP MODALS FOR EACH BUTTON */}
+                {activeModal && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative' }}>
+                      
+                      <button 
+                        onClick={() => setActiveModal(null)} 
+                        style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: '#888', fontSize: '1.1rem', cursor: 'pointer' }}
+                      >
+                        ✕
+                      </button>
+
+                      {activeModal === 'image' && (
+                        <div>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Thumbnail Image</h4>
+                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Paste the main image URL for your project card display.</p>
+                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Image URL</label>
+                          <input 
+                            type="text" 
+                            value={imageUrl} 
+                            onChange={(e) => setImageUrl(e.target.value)} 
+                            placeholder="https://images.unsplash.com/..." 
+                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
+                          />
+                        </div>
+                      )}
+
+                      {activeModal === 'text' && (
+                        <div>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Project Title & Description</h4>
+                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Set the headline title and detailed overview text.</p>
+                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Project Title</label>
+                          <input 
+                            type="text" 
+                            value={title} 
+                            onChange={(e) => setTitle(e.target.value)} 
+                            placeholder="VISUAL CONTENT CREATION..." 
+                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '14px' }}
+                          />
+                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Detailed Description</label>
+                          <textarea 
+                            value={description} 
+                            onChange={(e) => setDescription(e.target.value)} 
+                            placeholder="Project breakdown..." 
+                            rows={3} 
+                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px', resize: 'vertical' }}
+                          />
+                        </div>
+                      )}
+
+                      {activeModal === 'grid' && (
+                        <div>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Photo Grid Gallery</h4>
+                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Add extra showcase images separated by commas.</p>
+                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Gallery URLs (comma-separated)</label>
+                          <input 
+                            type="text" 
+                            value={galleryInput} 
+                            onChange={(e) => setGalleryInput(e.target.value)} 
+                            placeholder="https://img1.jpg, https://img2.jpg" 
+                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
+                          />
+                        </div>
+                      )}
+
+                      {activeModal === 'video' && (
+                        <div>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#fff' }}>Configure Video & Audio Link</h4>
+                          <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 20px 0' }}>Attach a YouTube video link or embedded media source.</p>
+                          <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>YouTube URL</label>
+                          <input 
+                            type="text" 
+                            value={youtubeUrl} 
+                            onChange={(e) => setYoutubeUrl(e.target.value)} 
+                            placeholder="https://www.youtube.com/watch?v=..." 
+                            style={{ width: '100%', background: '#1c1c24', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '12px', fontSize: '0.85rem', color: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: '20px' }}
+                          />
+                        </div>
+                      )}
+
+                      <button 
+                        onClick={() => setActiveModal(null)} 
+                        style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', border: 'none' }}
+                      >
+                        Done / Apply to Canvas
+                      </button>
+
+                    </div>
+                  </div>
+                )}
+
               </div>
 
-              {/* Right-Hand Inspector / Config Sidebar */}
+              {/* Right-Hand Inspector / Config Sidebar (Main Project Meta & Publish Control) */}
               <div style={{ width: '360px', background: '#121216', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '24px', flexShrink: 0 }}>
                 <h4 style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.1em', color: '#888', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Project Settings</h4>
 
@@ -313,7 +413,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Project Title</label>
                     <input 
-                      id="titleInput"
                       type="text" 
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
@@ -355,7 +454,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Main Thumbnail Image URL</label>
                     <input 
-                      id="imageUrlInput"
                       type="text" 
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
@@ -368,7 +466,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>YouTube Link</label>
                     <input 
-                      id="youtubeUrlInput"
                       type="text" 
                       value={youtubeUrl}
                       onChange={(e) => setYoutubeUrl(e.target.value)}
@@ -391,7 +488,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   <div>
                     <label style={{ display: 'block', fontSize: '0.7rem', color: '#aaa', marginBottom: '6px' }}>Gallery URLs (comma-separated)</label>
                     <input 
-                      id="galleryInputBox"
                       type="text" 
                       value={galleryInput}
                       onChange={(e) => setGalleryInput(e.target.value)}
