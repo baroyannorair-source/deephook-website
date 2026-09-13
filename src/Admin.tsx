@@ -1,4 +1,60 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+export default function Admin() {
+  // 1. All your states go here
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // 2. Your check-auth useEffect on mount
+  useEffect(() => {
+    const authStatus = localStorage.getItem('admin_authenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // 3. Your beforeunload useEffect
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // 4. Your helper functions (handleLogin, handleSave, etc.)
+  const handleLogin = (password: string) => {
+    setIsAuthenticated(true);
+    localStorage.setItem('admin_authenticated', 'true');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('admin_authenticated');
+  };
+
+  const handleFieldChange = () => {
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSave = () => {
+    setHasUnsavedChanges(false);
+  };
+
+  const getAdminPreviewUrl = (url: string) => {
+    // ... your preview url logic
+  };
+
+  // 5. Your return JSX...
+  return (
+    // ...
+  );
+}
 
 const getAdminPreviewUrl = (url: string) => {
   if (!url) return '';
