@@ -1056,14 +1056,20 @@ if (isAdminRoute) {
                   Image Gallery ({activeGalleryIndex + 1} / {selectedWork.gallery.length})
                 </h3>
                 
-                <div style={{ width: '100%', height: isMobile ? '240px' : '400px', borderRadius: '8px', overflow: 'hidden', background: '#000', marginBottom: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <img 
-                    src={selectedWork.gallery[activeGalleryIndex]} 
-                    alt="Gallery Preview" 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  />
-                </div>
-
+               <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000', borderRadius: '8px', overflow: 'hidden' }}>
+  <img
+    src={selectedWork.gallery[activeGalleryIndex]}
+    alt="Gallery Preview"
+    style={{
+      width: '100%',
+      maxWidth: '100%',
+      height: 'auto',
+      maxHeight: '75vh',
+      objectFit: 'contain',
+      display: 'block'
+    }}
+  />
+</div>
                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {selectedWork.gallery.map((imgSrc: string, idx: number) => (
                     <div 
