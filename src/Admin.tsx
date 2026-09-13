@@ -286,8 +286,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           
           {activeTab === 'builder' ? (
             <>
-              {/* Central Canvas Preview / Builder Area with Custom Scroller */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '40px 20px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
+              {/* Central Canvas Preview / Builder Area */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '30px 20px', alignItems: 'center', justifyContent: 'flex-start', background: '#0d0d10', position: 'relative' }}>
                 
                 {editingId !== null && (
                   <div style={{ width: '100%', maxWidth: '720px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 193, 7, 0.1)', border: '1px solid rgba(255, 193, 7, 0.3)', padding: '10px 16px', borderRadius: '8px', marginBottom: '20px', flexShrink: 0 }}>
@@ -296,49 +296,49 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
                 )}
 
-                <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', marginBottom: '32px', flexShrink: 0 }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 400, color: '#aaa', letterSpacing: '0.05em', margin: '0 0 24px 0' }}>
+                <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', marginBottom: '24px', flexShrink: 0 }}>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 400, color: '#aaa', letterSpacing: '0.05em', margin: '0 0 16px 0' }}>
                     {title ? `Live Preview: "${title}"` : 'Start building your project:'}
                   </h3>
                   
                   {/* Interactive Canvas Action Buttons */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                     
-                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🖼️</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Image</span>
+                    <div onClick={() => setActiveModal('image')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>🖼️</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Image</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>T</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
+                    <div onClick={() => setActiveModal('text')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>T</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Text / Title</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>⊞</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
+                    <div onClick={() => setActiveModal('grid')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>⊞</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Photo Grid</span>
                     </div>
 
-                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '20px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>▶</div>
-                      <span style={{ fontSize: '0.75rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
+                    <div onClick={() => setActiveModal('video')} style={{ background: '#141419', border: '1px solid rgba(255,255,255,0.08)', padding: '14px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>▶</div>
+                      <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 500 }}>Video & Audio</span>
                     </div>
 
                   </div>
                 </div>
 
-                {/* Comprehensive Live Canvas Project Preview Mockup (Matching user screenshot layout) */}
-                <div style={{ width: '100%', maxWidth: '640px', background: '#141419', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', overflow: 'hidden', padding: '32px 24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', gap: '28px', boxSizing: 'border-box', marginBottom: '40px' }}>
+                {/* SCROLLABLE CANVAS CONTAINER FRAME (Fixed height viewport with custom vertical scrollbar) */}
+                <div style={{ width: '100%', maxWidth: '600px', height: '520px', background: '#141419', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', overflowY: 'auto', padding: '32px 24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', gap: '28px', boxSizing: 'border-box', marginBottom: '40px', scrollbarWidth: 'thin', scrollbarColor: '#444 #141419' }}>
                   
                   {/* Title Preview Component */}
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', flexShrink: 0 }}>
                     <h2 style={{ fontSize: '1.15rem', fontWeight: 500, color: '#fff', letterSpacing: '0.05em', margin: 0, textTransform: 'uppercase' }}>
                       {title || 'VISUAL CONTENT CREATION FOR SILVER JEWELRY BRAND'}
                     </h2>
                   </div>
 
                   {/* Photo Grid / Gallery Carousel Component */}
-                  <div>
+                  <div style={{ flexShrink: 0 }}>
                     <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Gallery / Photo Grid Component</span>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', background: '#0a0a0c', padding: '6px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                       {(galleryArray.length > 0 ? galleryArray : [imageUrl || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop']).slice(0, 5).map((imgSrc, idx) => (
@@ -350,7 +350,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
 
                   {/* Video Embed Component */}
-                  <div>
+                  <div style={{ flexShrink: 0 }}>
                     <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Video & Audio Preview Component</span>
                     <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
                       {youtubeUrl ? (
@@ -371,7 +371,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
 
                   {/* Description & Text Component */}
-                  <div>
+                  <div style={{ flexShrink: 0 }}>
                     <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Description & Content Component</span>
                     <div style={{ background: '#0a0a0c', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <p style={{ fontSize: '0.75rem', color: '#ccc', lineHeight: '1.6', margin: '0 0 12px 0', whiteSpace: 'pre-line' }}>
@@ -757,7 +757,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
           </button>
         </form>
       </div>
-      <div style={{ position: 'relative', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: '1' }} />
     </div>
   );
 }
