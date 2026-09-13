@@ -26,7 +26,7 @@ function FloatingPathsBackground({ position }: { position: number }) {
       684 - i * 5 * position
     } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
     width: 0.5 + i * 0.03,
-  }));
+  }
 
 export default function Admin() {
   // 1. All your states go here
