@@ -98,6 +98,9 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [galleryInput, setGalleryInput] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Track the ID of the project currently being edited
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -119,49 +122,98 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     }
   };
 
-  const handleAddProject = (e: React.FormEvent) => {
+  const handleEditProject = (project: Project) => {
+    setEditingId(project.id);
+    setTitle(project.title);
+    setCategory(project.category);
+    setAspectRatio(project.aspectRatio);
+    setDescription(project.description);
+    setImageUrl(project.imageUrl);
+    setYoutubeUrl(project.youtubeUrl);
+    setGalleryInput(project.gallery ? project.gallery.join(', ') : '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setTitle('');
+    setCategory('Brand Identity');
+    setAspectRatio('1:1');
+    setDescription('');
+    setImageUrl('');
+    setYoutubeUrl('');
+    setGalleryInput('');
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !imageUrl) {
       setError('Please provide at least a project title and main thumbnail image.');
       return;
     }
 
-   // Automatically format standard YouTube watch links to embed format
+    // Automatically format standard YouTube watch links to embed format
     const formattedYoutubeUrl = youtubeUrl.includes('watch?v=')
       ? youtubeUrl.replace('watch?v=', 'embed/')
       : youtubeUrl.includes('youtu.be/')
       ? youtubeUrl.replace('youtu.be/', 'www.youtube.com/embed/')
       : youtubeUrl;
 
-    const newProject: Project = {
-      id: Date.now().toString(),
-      title,
-      category,
-      aspectRatio,
-      description,
-      imageUrl,
-      youtubeUrl: formattedYoutubeUrl,
-      gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
-    };
+    if (editingId !== null) {
+      // Update existing project
+      const updatedProjects = projects.map(p => 
+        p.id === editingId 
+          ? {
+              ...p,
+              title,
+              category,
+              aspectRatio,
+              description,
+              imageUrl,
+              youtubeUrl: formattedYoutubeUrl,
+              gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
+            }
+          : p
+      );
+      saveProjectsToStorage(updatedProjects);
+      setSuccessMessage('Project successfully updated!');
+    } else {
+      // Add new project
+      const newProject: Project = {
+        id: Date.now().toString(),
+        title,
+        category,
+        aspectRatio,
+        description,
+        imageUrl,
+        youtubeUrl: formattedYoutubeUrl,
+        gallery: galleryInput ? galleryInput.split(',').map(s => s.trim()) : []
+      };
+      saveProjectsToStorage([newProject, ...projects]);
+      setSuccessMessage('Project successfully published to portfolio!');
+    }
     
-    saveProjectsToStorage([newProject, ...projects]);
+    // Reset form state
+    setEditingId(null);
     setTitle('');
     setDescription('');
     setImageUrl('');
     setYoutubeUrl('');
     setGalleryInput('');
     setError(null);
-    setSuccessMessage('Project successfully uploaded to portfolio!');
     setTimeout(() => setSuccessMessage(null), 4000);
   };
 
   const handleDeleteProject = (id: string) => {
-   saveProjectsToStorage(projects.filter(p => p.id !== id));
+    saveProjectsToStorage(projects.filter(p => p.id !== id));
+    if (editingId === id) {
+      handleCancelEdit();
+    }
   };
 
   if (isAuthenticated) {
     return (
-<div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflowY: 'auto', background: '#050505', color: '#fff', padding: '40px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflowY: 'auto', background: '#050505', color: '#fff', padding: '40px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box' }}>
         <FloatingPathsBackground position={1} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '960px', margin: '0 auto' }}>
           
@@ -184,11 +236,24 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
             </div>
           )}
 
-          {/* Project Upload Form */}
+          {/* Project Upload / Edit Form */}
           <div style={{ background: 'rgba(18, 18, 18, 0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', padding: '32px', borderRadius: '16px', marginBottom: '40px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: '0 0 20px 0', textTransform: 'uppercase' }}>Upload New Portfolio Work</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.1em', margin: 0, textTransform: 'uppercase' }}>
+                {editingId !== null ? 'Edit Portfolio Work' : 'Upload New Portfolio Work'}
+              </h2>
+              {editingId !== null && (
+                <button 
+                  type="button"
+                  onClick={handleCancelEdit}
+                  style={{ background: 'transparent', color: '#888', border: '1px solid rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
             
-            <form onSubmit={handleAddProject} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.7rem', color: '#999', marginBottom: '8px', letterSpacing: '0.05em' }}>Project Title</label>
@@ -279,7 +344,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                 type="submit"
                 style={{ width: '100%', background: '#fff', color: '#000', fontWeight: 600, padding: '12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', border: 'none', letterSpacing: '0.05em', marginTop: '8px' }}
               >
-                Publish Project to Website
+                {editingId !== null ? 'Save Changes' : 'Publish Project to Website'}
               </button>
             </form>
           </div>
@@ -302,12 +367,20 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                       </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleDeleteProject(project.id)}
-                    style={{ background: 'transparent', color: '#ff5c5c', border: '1px solid rgba(255,92,92,0.3)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
-                  >
-                    Delete
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={() => handleEditProject(project)}
+                      style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteProject(project.id)}
+                      style={{ background: 'transparent', color: '#ff5c5c', border: '1px solid rgba(255,92,92,0.3)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
