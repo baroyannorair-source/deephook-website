@@ -16,7 +16,7 @@ const getAdminPreviewUrl = (url: string) => {
   return url;
 };
 
-<CosmicParallaxBg className="absolute inset-0 -z-10" />
+<CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0 -z-10" />
 
 interface Project {
   id: string;
@@ -220,7 +220,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   if (isAuthenticated) {
     return (
       <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: 'transparent', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-        <CosmicParallaxBg className="absolute inset-0 -z-10" />
+        <CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0 -z-10" />
 
         {/* Top Header Navigation Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: '#121216', borderBottom: '1px solid rgba(255,255,255,0.08)', zIndex: 10, flexShrink: 0 }}>
@@ -670,7 +670,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', overflow: 'hidden' }}>
-      <CosmicParallaxBg className="absolute inset-0 -z-10" />
+      <CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0 -z-10" />
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
         <span style={{ fontSize: '0.75rem', letterSpacing: '0.25em', color: '#777', textTransform: 'uppercase' }}>DEEPHOOK AGENCY CMS</span>
