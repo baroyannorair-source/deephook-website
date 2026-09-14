@@ -16,7 +16,7 @@ const getAdminPreviewUrl = (url: string) => {
   return url;
 };
 
-<CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0 -z-10" />
+<CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0" />
 
 interface Project {
   id: string;
@@ -220,7 +220,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   if (isAuthenticated) {
     return (
       <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: 'transparent', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-        <CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="fixed inset-0 -z-10" />
+        <CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0" />
 
         {/* Top Header Navigation Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: '#121216', borderBottom: '1px solid rgba(255,255,255,0.08)', zIndex: 10, flexShrink: 0 }}>
