@@ -85,13 +85,12 @@ body, html {
   transform: translateX(-50%);
   width: 1200px;
   height: 600px;
-  background: radial-gradient(circle at center, rgba(40, 140, 255, 0.6) 0%, rgba(15, 45, 90, 0.9) 50%, #000 100%);
+  background: radial-gradient(circle at center, rgba(30, 100, 190, 0.4) 0%, rgba(10, 30, 60, 0.8) 50%, #000 100%);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   z-index: 1 !important;
   pointer-events: none !important;
-  box-shadow: 0 -20px 60px rgba(60, 160, 255, 0.5), inset 0 30px 40px rgba(120, 210, 255, 0.4);
+  box-shadow: 0 -10px 30px rgba(40, 120, 220, 0.25), inset 0 15px 25px rgba(80, 170, 255, 0.2);
 }
-
 #title, #subtitle {
   display: none; /* Hide big center title on admin login screen if it overlaps form */
 }
