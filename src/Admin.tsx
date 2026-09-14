@@ -40,7 +40,12 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     return localStorage.getItem('admin_authenticated') === 'true';
   });
 
-  const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
+  const [activeTab, setActiveTab] = useState<'builder' | 'manage'>(() => {
+  return (localStorage.getItem('admin_activeTab') as 'builder' | 'manage') || 'builder';
+});
+  useEffect(() => {
+  localStorage.setItem('admin_activeTab', activeTab);
+}, [activeTab]);
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
 
   const [projects, setProjects] = useState<Project[]>(() => {
