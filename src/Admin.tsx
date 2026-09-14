@@ -16,8 +16,6 @@ const getAdminPreviewUrl = (url: string) => {
   return url;
 };
 
-<CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0" />
-
 interface Project {
   id: string;
   title: string;
@@ -28,6 +26,8 @@ interface Project {
   youtubeUrl: string;
   gallery: string[];
 }
+
+
 
 export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [username, setUsername] = useState('');
