@@ -99,3 +99,40 @@ body, html {
   from { transform: translateY(0px); }
   to { transform: translateY(-2000px); }
 }
+
+.savee-masonry-grid {
+  column-count: 5;
+  column-gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 1400px) {
+  .savee-masonry-grid { column-count: 4; }
+}
+
+@media (max-width: 1024px) {
+  .savee-masonry-grid { column-count: 3; }
+}
+
+@media (max-width: 768px) {
+  .savee-masonry-grid { column-count: 2; }
+}
+
+@media (max-width: 480px) {
+  .savee-masonry-grid { column-count: 1; }
+}
+
+.savee-masonry-item {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #121212;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.savee-masonry-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
