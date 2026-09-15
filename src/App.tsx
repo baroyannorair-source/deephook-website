@@ -891,12 +891,11 @@ export default function App() {
                         style={{
                           position: 'absolute',
                           inset: 0,
-                          background: 'rgba(0,0,0,0.5)',
-                          backdropFilter: 'blur(10px)',
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)',
                           display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'flex-end',
-                          padding: '10px',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-end',
+                        padding: '12px',
                         }}
                       >
                         <span style={{ color: '#fff', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
