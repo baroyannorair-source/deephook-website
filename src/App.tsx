@@ -229,8 +229,8 @@ function CameraController({ targetPosition, isMobile, isTablet }: { targetPositi
 export default function App() {
   const [isAdminRoute, setIsAdminRoute] = useState<boolean>(false);
   const [isNotFound, setIsNotFound] = useState<boolean>(false);
-
-  const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
+  
+const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
     const saved = localStorage.getItem('deephook_portfolio_works');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { return INITIAL_WORKS; }
@@ -238,7 +238,17 @@ export default function App() {
     return INITIAL_WORKS;
   });
 
+  // Fetch live projects from cPanel server on load for all visitors
   useEffect(() => {
+    fetch('https://deephook.am/save-projects.php')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setPortfolioWorks(data);
+        }
+      })
+      .catch(err => console.error("Could not load public projects from server", err));
+  }, []);  useEffect(() => {
     const path = window.location.pathname;
     if (path === '/admin' || path === '/admin/') {
       setIsAdminRoute(true);
