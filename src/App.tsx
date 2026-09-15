@@ -1371,7 +1371,6 @@ if (isAdminRoute) {
             </form>
           </div>
         </div>
-      )}
-    </div>
+     </div>
   );
 }
