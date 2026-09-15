@@ -230,7 +230,6 @@ export default function App() {
   const [isAdminRoute, setIsAdminRoute] = useState<boolean>(false);
   const [isNotFound, setIsNotFound] = useState<boolean>(false);
 
-  // Portfolio works state loaded from localStorage or fallback to INITIAL_WORKS
   const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
     const saved = localStorage.getItem('deephook_portfolio_works');
     if (saved) {
@@ -238,16 +237,6 @@ export default function App() {
     }
     return INITIAL_WORKS;
   });
-
-  // Admin New Project Form State
-  const [newTitle, setNewTitle] = useState('');
-  const [newTag, setNewTag] = useState('Banner');
-  const [newType, setNewType] = useState('square');
-  const [newImage, setNewImage] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [newYoutubeUrl, setNewYoutubeUrl] = useState('https://www.youtube.com/embed/dQw4w9WgXcQ');
-  const [newGalleryInput, setNewGalleryInput] = useState('');
-  const [newGalleryList, setNewGalleryList] = useState<string[]>([]);
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -261,72 +250,6 @@ export default function App() {
   const saveWorksToStorage = (updatedWorks: any[]) => {
     setPortfolioWorks(updatedWorks);
     localStorage.setItem('deephook_portfolio_works', JSON.stringify(updatedWorks));
-  };
-
-  const handleAddProjectSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newImage) {
-      alert('Please fill in at least the Title and Main Image URL.');
-      return;
-    }
-
-    const createdProject = {
-      id: Date.now(),
-      title: newTitle,
-      type: newType,
-      tag: newTag,
-      image: newImage,
-      description: newDescription || 'No description provided.',
-      gallery: newGalleryList.length > 0 ? newGalleryList : [newImage],
-      youtubeUrl: newYoutubeUrl.includes('watch?v=') 
-        ? newYoutubeUrl.replace('watch?v=', 'embed/') 
-        : newYoutubeUrl,
-    };
-
-    const updated = [createdProject, ...portfolioWorks];
-    saveWorksToStorage(updated);
-
-    // Reset form
-    setNewTitle('');
-    setNewImage('');
-    setNewDescription('');
-    setNewGalleryList([]);
-    alert('Project successfully created and published live!');
-  };
-
-  const handleExportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(portfolioWorks, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "deephook_projects_backup.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileReader = new FileReader();
-    if (e.target.files && e.target.files[0]) {
-      fileReader.readAsText(e.target.files[0], "UTF-8");
-      fileReader.onload = (event) => {
-        try {
-          const parsed = JSON.parse(event.target?.result as string);
-          if (Array.isArray(parsed)) {
-            saveWorksToStorage(parsed);
-            alert('Projects successfully imported!');
-          }
-        } catch (error) {
-          alert('Invalid JSON file format.');
-        }
-      };
-    }
-  };
-
-  const handleDeleteProject = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
-      const updated = portfolioWorks.filter((w) => w.id !== id);
-      saveWorksToStorage(updated);
-    }
   };
 
   const [currentSlogan, setCurrentSlogan] = React.useState('');
@@ -530,12 +453,10 @@ export default function App() {
     media: isMobile ? [ (2 - carouselIndex) * 4.5, 0, 0 ] : [3.5, 0, 0]
   };
 
-  // ADMIN ROUTE RENDER
-if (isAdminRoute) {
-  return <AdminPortal onReturn={() => setIsAdminRoute(false)} />;
-}
+  if (isAdminRoute) {
+    return <AdminPortal onReturn={() => setIsAdminRoute(false)} />;
+  }
 
-  // CUSTOM 404 NOT FOUND RENDER CHECK
   if (isNotFound) {
     return (
       <div style={{ width: '100vw', height: '100vh', background: '#0a0a0a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif', padding: '24px', boxSizing: 'border-box', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -929,68 +850,72 @@ if (isAdminRoute) {
           </div>
 
           <div 
-  ref={gridContainerRef}
-  className="savee-masonry-grid"
-  style={{ maxWidth: '1600px', margin: '0 auto' }}
->
-          {portfolioWorks
-  .filter((work) => {
-    const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
-    const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTag && matchesSearch;
-  })
-  .map((work) => {
-    return (
-      <div
-        key={work.id}
-        className="savee-masonry-item"
-        onClick={() => {
-          setActiveGalleryIndex(0);
-          setSelectedWork(work);
-        }}
-      >
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            aspectRatio: work.aspectRatio === '9:16' || work.type === 'rect-v' ? '9/16' : '1/1',
-          }}
-        >
-          <img
-            src={work.image || work.thumbnail || work.imageUrl || work.cover}
-            alt={work.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(10px)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-              padding: '10px',
-            }}
+            ref={gridContainerRef}
+            className="savee-masonry-grid"
+            style={{ maxWidth: '1600px', margin: '0 auto' }}
           >
-            <span style={{ color: '#fff', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              {work.title}
-            </span>
-            <span style={{ color: '#888', fontSize: '8px', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-              {work.tag}
-            </span>
+            {portfolioWorks
+              .filter((work) => {
+                const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
+                const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesTag && matchesSearch;
+              })
+              .map((work) => {
+                return (
+                  <div
+                    key={work.id}
+                    className="savee-masonry-item"
+                    onClick={() => {
+                      setActiveGalleryIndex(0);
+                      setSelectedWork(work);
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        aspectRatio: work.aspectRatio === '9:16' || work.type === 'rect-v' ? '9/16' : '1/1',
+                      }}
+                    >
+                      <img
+                        src={work.image || work.thumbnail || work.imageUrl || work.cover}
+                        alt={work.title}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          display: 'block',
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'rgba(0,0,0,0.5)',
+                          backdropFilter: 'blur(10px)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'flex-end',
+                          padding: '10px',
+                        }}
+                      >
+                        <span style={{ color: '#fff', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                          {work.title}
+                        </span>
+                        <span style={{ color: '#888', fontSize: '8px', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                          {work.tag}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
-      </div>
-    );
-  })
-}
+      )}
 
+      {selectedWork && (
+        <div
           onClick={() => setSelectedWork(null)}
           style={{
             position: 'fixed',
@@ -1025,9 +950,9 @@ if (isAdminRoute) {
                 <h2 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 600, margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   {selectedWork.title}
                 </h2>
-             <span style={{ color: '#888', fontSize: '0.75rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-  Project Tags: {Array.isArray(selectedWork.tag) ? selectedWork.tag.join(', ') : (selectedWork.tag || selectedWork.category || 'Portfolio')}
-</span>
+                <span style={{ color: '#888', fontSize: '0.75rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Project Tags: {Array.isArray(selectedWork.tag) ? selectedWork.tag.join(', ') : (selectedWork.tag || selectedWork.category || 'Portfolio')}
+                </span>
               </div>
               <button 
                 onClick={() => setSelectedWork(null)}
@@ -1052,74 +977,73 @@ if (isAdminRoute) {
                   Image Gallery ({activeGalleryIndex + 1} / {selectedWork.gallery.length})
                 </h3>
                 
-               <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000', borderRadius: '8px', overflow: 'hidden' }}>
-  <img
-    src={selectedWork.gallery[activeGalleryIndex]}
-    alt="Gallery Preview"
-    style={{
-      width: '100%',
-      maxWidth: '100%',
-      height: 'auto',
-      maxHeight: '75vh',
-      objectFit: 'contain',
-      display: 'block'
-    }}
-  />
+                <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px' }}>
+                  <img
+                    src={selectedWork.gallery[activeGalleryIndex]}
+                    alt="Gallery Preview"
+                    style={{
+                      width: '100%',
+                      maxWidth: '100%',
+                      height: 'auto',
+                      maxHeight: '75vh',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
+                  />
 
-  {/* Previous Button */}
-  {selectedWork.gallery && selectedWork.gallery.length > 1 && (
-    <button
-      onClick={() => setActiveGalleryIndex((prev) => (prev === 0 ? selectedWork.gallery.length - 1 : prev - 1))}
-      style={{
-        position: 'absolute',
-        left: '12px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        background: 'rgba(0, 0, 0, 0.6)',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '50%',
-        width: '40px',
-        height: '40px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.2rem',
-        zIndex: 10
-      }}
-    >
-      ‹
-    </button>
-  )}
+                  {selectedWork.gallery && selectedWork.gallery.length > 1 && (
+                    <button
+                      onClick={() => setActiveGalleryIndex((prev) => (prev === 0 ? selectedWork.gallery.length - 1 : prev - 1))}
+                      style={{
+                        position: 'absolute',
+                        left: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.2rem',
+                        zIndex: 10
+                      }}
+                    >
+                      ‹
+                    </button>
+                  )}
 
-  {/* Next Button */}
-  {selectedWork.gallery && selectedWork.gallery.length > 1 && (
-    <button
-      onClick={() => setActiveGalleryIndex((prev) => (prev === selectedWork.gallery.length - 1 ? 0 : prev + 1))}
-      style={{
-        position: 'absolute',
-        right: '12px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        background: 'rgba(0, 0, 0, 0.6)',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '50%',
-        width: '40px',
-        height: '40px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.2rem',
-        zIndex: 10
-      }}
-    >
-      ›
-    </button>
-  )}
-</div>
+                  {selectedWork.gallery && selectedWork.gallery.length > 1 && (
+                    <button
+                      onClick={() => setActiveGalleryIndex((prev) => (prev === selectedWork.gallery.length - 1 ? 0 : prev + 1))}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.2rem',
+                        zIndex: 10
+                      }}
+                    >
+                      ›
+                    </button>
+                  )}
+                </div>
+
                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {selectedWork.gallery.map((imgSrc: string, idx: number) => (
                     <div 
@@ -1371,6 +1295,8 @@ if (isAdminRoute) {
             </form>
           </div>
         </div>
-     </div>
+      )}
+
+    </div>
   );
 }
