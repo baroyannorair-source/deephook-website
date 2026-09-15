@@ -929,45 +929,47 @@ if (isAdminRoute) {
           </div>
 
           <div 
-            ref={gridContainerRef}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
-              gap: '6px',
-              maxWidth: '1600px',
-              margin: '0 auto',
-            }}
-          >
-            {portfolioWorks
-              .filter((work) => {
-                const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
-                const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
-                return matchesTag && matchesSearch;
-              })
-              .map((work) => {
-                return (
+  ref={gridContainerRef}
+  className="savee-masonry-grid"
+  style={{ maxWidth: '1600px', margin: '0 auto' }}
+>
+          {portfolioWorks
+            .filter((work) => {
+              const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
+              const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
+              return matchesTag && matchesSearch;
+            })
+            .map((work) => {
+              return (
+                <div
+                  key={work.id}
+                  className="savee-masonry-item"
+                  onClick={() => {
+                    setActiveGalleryIndex(0);
+                    setSelectedWork(work);
+                  }}
+                >
                   <div
-                    key={work.id}
                     style={{
-                      gridRow: work.type === 'rect-v' ? 'span 2' : 'span 1',
-                      gridColumn: 'span 1',
                       position: 'relative',
-                      overflow: 'hidden',
-                      borderRadius: '4px',
-                      backgroundColor: '#1a1a1a',
-                      cursor: 'pointer',
-                      aspectRatio: work.type === 'rect-v' ? '9/16' : '1/1',
-                    }}
-                    onClick={() => {
-                      setActiveGalleryIndex(0);
-                      setSelectedWork(work);
+                      width: '100%',
+                      aspectRatio: work.aspectRatio === '9:16' || work.type === 'rect-v' ? '9/16' : '1/1',
                     }}
                   >
-                    <img
-  src={work.image || work.thumbnail || work.imageUrl || work.cover}
-  alt={work.title}
-  style={{ width: '100%', height: '180px', objectFit: 'contain' }}
-/>
+                    {<img 
+                      src={work.image || work.thumbnail || work.imageUrl || work.cover} 
+                      alt={work.title}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block'
+                      }}
+                    />}
+                  </div>
+                </div>
+              );
+            })}
                     <div 
                       style={{
                         position: 'absolute',
