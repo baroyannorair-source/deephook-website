@@ -44,12 +44,25 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   return (localStorage.getItem('admin_activeTab') as 'builder' | 'manage') || 'builder';
 });
   useEffect(() => {
-  localStorage.setItem('admin_activeTab', activeTab);
-}, [activeTab]);
+    localStorage.setItem('deephook_activeTab', activeTab);
+  }, [activeTab]);
+
+  // Load projects from server when admin opens
+  useEffect(() => {
+    fetch('https://deephook.am/save-projects.php')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProjects(data);
+        }
+      })
+      .catch(err => console.error("Could not load projects from server", err));
+  }, []);
+
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
 
   const [projects, setProjects] = useState<Project[]>(() => {
-    const saved = localStorage.getItem('deephook_portfolio_works');
+    const saved = localStorage.getItem('deephook portfolio works');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { return []; }
     }
@@ -69,7 +82,17 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   const saveProjectsToStorage = (updatedProjects: Project[]) => {
     setProjects(updatedProjects);
-    localStorage.setItem('deephook_portfolio_works', JSON.stringify(updatedProjects));
+    localStorage.setItem('deephook portfolio works', JSON.stringify(updatedProjects));
+    
+    // Save globally to your cPanel hosting server so it goes live for everyone
+    fetch('https://deephook.am/save-projects.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedProjects)
+    })
+    .then(res => res.json())
+    .then(data => console.log('Saved to server live!', data))
+    .catch(err => console.error('Error saving to server:', err));
   };
 
   const [title, setTitle] = useState('');
