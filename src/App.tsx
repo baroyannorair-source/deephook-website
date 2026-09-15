@@ -987,14 +987,13 @@ if (isAdminRoute) {
                       <span style={{ color: '#888', fontSize: '8px', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
                         {work.tag}
                       </span>
-                 </div>
+           </div>
         </div>
       </div>
     );
   })
 }
-      {selectedWork && (
-        <div 
+
           onClick={() => setSelectedWork(null)}
           style={{
             position: 'fixed',
