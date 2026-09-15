@@ -990,7 +990,7 @@ if (isAdminRoute) {
            </div>
         </div>
       </div>
-    );
+    )}
   })
 }
 
