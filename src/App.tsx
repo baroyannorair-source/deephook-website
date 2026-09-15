@@ -934,60 +934,57 @@ if (isAdminRoute) {
   style={{ maxWidth: '1600px', margin: '0 auto' }}
 >
           {portfolioWorks
-            .filter((work) => {
-              const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
-              const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
-              return matchesTag && matchesSearch;
-            })
-            .map((work) => {
-              return (
-                <div
-                  key={work.id}
-                  className="savee-masonry-item"
-                  onClick={() => {
-                    setActiveGalleryIndex(0);
-                    setSelectedWork(work);
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      width: '100%',
-                      aspectRatio: work.aspectRatio === '9:16' || work.type === 'rect-v' ? '9/16' : '1/1',
-                    }}
-                  >
-                    {<img 
-                      src={work.image || work.thumbnail || work.imageUrl || work.cover} 
-                      alt={work.title}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        display: 'block'
-                      }}
-                    />}
-                  </div>
-                </div>
-              );
-            })}
-                    <div 
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-end',
-                        padding: '10px',
-                      }}
-                    >
-                      <span style={{ color: '#fff', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                        {work.title}
-                      </span>
-                      <span style={{ color: '#888', fontSize: '8px', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
-                        {work.tag}
-                      </span>
-           </div>
+  .filter((work) => {
+    const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
+    const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTag && matchesSearch;
+  })
+  .map((work) => {
+    return (
+      <div
+        key={work.id}
+        className="savee-masonry-item"
+        onClick={() => {
+          setActiveGalleryIndex(0);
+          setSelectedWork(work);
+        }}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            aspectRatio: work.aspectRatio === '9:16' || work.type === 'rect-v' ? '9/16' : '1/1',
+          }}
+        >
+          <img
+            src={work.image || work.thumbnail || work.imageUrl || work.cover}
+            alt={work.title}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              padding: '10px',
+            }}
+          >
+            <span style={{ color: '#fff', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              {work.title}
+            </span>
+            <span style={{ color: '#888', fontSize: '8px', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+              {work.tag}
+            </span>
+          </div>
         </div>
       </div>
     );
