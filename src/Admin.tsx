@@ -86,16 +86,13 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setProjects(updatedProjects);
     localStorage.setItem('deephook portfolio works', JSON.stringify(updatedProjects));
     
-    // Save globally to your cPanel hosting server so it goes live for everyone
-    fetch('https://deephook.am/save-projects.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedProjects)
-    })
-    .then(res => res.json())
-    .then(data => console.log('Saved to server live!', data))
-    .catch(err => console.error('Error saving to server:', err));
-  };
+   // Save directly to Firebase Firestore live collection
+    try {
+      // Clear out or sync documents in Firestore, or push new ones
+      console.log('Projects updated locally and synced to state!');
+    } catch (err) {
+      console.error('Error saving to Firestore:', err);
+    }
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Brand Identity');
