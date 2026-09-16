@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CosmicParallaxBg } from './CosmicParallaxBg';
-import { collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+import { collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { db } from "./firebase";
 
 const getAdminPreviewUrl = (url: string) => {
