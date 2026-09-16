@@ -29,8 +29,6 @@ interface Project {
   gallery: string[];
 }
 
-
-
 export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -43,8 +41,9 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   });
 
   const [activeTab, setActiveTab] = useState<'builder' | 'manage'>(() => {
-  return (localStorage.getItem('admin_activeTab') as 'builder' | 'manage') || 'builder';
-});
+    return (localStorage.getItem('admin_activeTab') as 'builder' | 'manage') || 'builder';
+  });
+
   useEffect(() => {
     localStorage.setItem('deephook_activeTab', activeTab);
   }, [activeTab]);
@@ -86,13 +85,13 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setProjects(updatedProjects);
     localStorage.setItem('deephook portfolio works', JSON.stringify(updatedProjects));
     
-   // Save directly to Firebase Firestore live collection
+    // Save directly to Firebase Firestore live collection
     try {
-      // Clear out or sync documents in Firestore, or push new ones
       console.log('Projects updated locally and synced to state!');
     } catch (err) {
       console.error('Error saving to Firestore:', err);
     }
+  };
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Brand Identity');
@@ -336,7 +335,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
                 </div>
 
-                {/* SCROLLABLE CANVAS CONTAINER FRAME (Fixed height viewport with custom vertical scrollbar) */}
+                {/* SCROLLABLE CANVAS CONTAINER FRAME */}
                 <div style={{ width: '100%', maxWidth: '600px', height: '520px', background: '#141419', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', overflowY: 'auto', padding: '32px 24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', gap: '28px', boxSizing: 'border-box', marginBottom: '40px', scrollbarWidth: 'thin', scrollbarColor: '#444 #141419' }}>
                   
                   {/* Title Preview Component */}
@@ -384,7 +383,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Description & Content Component</span>
                     <div style={{ background: '#0a0a0c', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <p style={{ fontSize: '0.75rem', color: '#ccc', lineHeight: '1.6', margin: '0 0 12px 0', whiteSpace: 'pre-line' }}>
-                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week. The objective was to create high-end, fashion-oriented content that reflects the elegance of the jewelry while aligning with international industry standards.'}
+                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week.'}
                       </p>
                       {youtubeUrl && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', wordBreak: 'break-all' }}>
@@ -396,10 +395,10 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
                 </div>
 
-                {/* INLINE CANVAS POPUP MODALS FOR EACH BUTTON */}
+                {/* INLINE CANVAS POPUP MODALS */}
                 {activeModal && (
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: activeModal === 'grid' ? '560px' : '480px', maxH: '90vh', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: activeModal === 'grid' ? '560px' : '480px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
                       
                       <button 
                         onClick={() => setActiveModal(null)} 
@@ -451,7 +450,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                           <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#fff' }}>Configure Photo Grid Gallery</h4>
                           <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 16px 0' }}>Add individual image links with live thumbnail previews.</p>
                           
-                          {/* Add link section */}
                           <div style={{ background: '#1c1c24', padding: '12px', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.2)', marginBottom: '16px' }}>
                             <label style={{ display: 'block', fontSize: '0.7rem', color: '#ccc', marginBottom: '6px' }}>New Gallery Image URL</label>
                             <div style={{ display: 'flex', gap: '8px' }}>
@@ -472,7 +470,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                             </div>
                           </div>
 
-                          {/* Uploaded items list */}
                           <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px', marginBottom: '16px' }}>
                             <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 500 }}>Attached Links ({galleryArray.length})</span>
                             {galleryArray.length === 0 ? (
@@ -492,12 +489,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                                     style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                                     title="Remove"
                                   >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <polyline points="3 6 5 6 21 6"></polyline>
-                                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                      <line x1="10" y1="11" x2="10" y2="17"></line>
-                                      <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
+                                    ✕
                                   </button>
                                 </div>
                               ))
