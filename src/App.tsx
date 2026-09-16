@@ -8,24 +8,6 @@ import { AdminPortal } from './Admin';
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { db } from "./firebase";
 
-const [projects, setProjects] = useState<any[]>([]);
-
-  useEffect(() => {
-    async function loadProjects() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "projects"));
-        const projectList = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setProjects(projectList);
-      } catch (error) {
-        console.error("Error loading projects:", error);
-      }
-    }
-    loadProjects();
-  }, []);
-
 const famousSlogans = [
   "Apple: Think different",
   "Nike: Just do it",
@@ -476,6 +458,24 @@ const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
       });
     }
   };
+
+  const [projects, setProjects] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const projectList = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setProjects(projectList);
+      } catch (error) {
+        console.error("Error loading projects:", error);
+      }
+    }
+    loadProjects();
+  }, []);
 
   const nodePositions: Record<string, [number, number, number]> = {
     social: isMobile ? [ (0 - carouselIndex) * 4.5, 0, 0 ] : [-3.5, 0, 0],
