@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CosmicParallaxBg } from './CosmicParallaxBg';
+import { collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+import { db } from "./firebase";
 
 const getAdminPreviewUrl = (url: string) => {
   if (!url) return '';
@@ -48,29 +50,41 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 }, [activeTab]);
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
 
-  const [projects, setProjects] = useState<Project[]>(() => {
-    const saved = localStorage.getItem('deephook_portfolio_works');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return []; }
-    }
-    return [
-      {
-        id: '1',
-        title: 'VISUAL CONTENT CREATION FOR SILVER JEWELRY BRAND',
-        category: 'Brand Identity',
-        aspectRatio: '9:16',
-        description: 'Qveen Jewellery 2021 Virtual Catwalk during London Fashion Week...',
-        imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop',
-        youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        gallery: []
+  const [projects, setProjects] = useState<Project[]>([]);
+
+// Fetch projects from Firebase Firestore on load
+useEffect(() => {
+  const fetchProjectsFromFirebase = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "projects"));
+      const loadedProjects: Project[] = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        loadedProjects.push({
+          id: docSnap.id,
+          title: data.title || '',
+          category: data.category || 'Brand Identity',
+          aspectRatio: data.aspectRatio || '1:1',
+          description: data.description || '',
+          imageUrl: data.imageUrl || '',
+          youtubeUrl: data.youtubeUrl || '',
+          gallery: data.gallery || []
+        });
+      });
+      if (loadedProjects.length > 0) {
+        setProjects(loadedProjects);
       }
+    } catch (err) {
+      console.error("Error fetching projects from Firebase:", err);
+    }
+  };
+
+  if (isAuthenticated) {
+    fetchProjectsFromFirebase();
+  }
+}, [isAuthenticated]);
     ];
   });
-
-  const saveProjectsToStorage = (updatedProjects: Project[]) => {
-    setProjects(updatedProjects);
-    localStorage.setItem('deephook_portfolio_works', JSON.stringify(updatedProjects));
-  };
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Brand Identity');
@@ -81,7 +95,6 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
   const [galleryInput, setGalleryInput] = useState('');
   const [newGalleryUrl, setNewGalleryUrl] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Step 2: Unsaved changes warning tracking state
@@ -162,51 +175,38 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setGalleryInput('');
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !imageUrl) {
-      setError('Please provide at least a project title and main thumbnail image.');
-      return;
-    }
+const handleFormSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!title || !imageUrl) {
+    setError('Please provide at least a project title and main thumbnail image.');
+    return;
+  }
 
-    const formattedYoutubeUrl = youtubeUrl.includes('watch?v=')
-      ? youtubeUrl.replace('watch?v=', 'embed/')
-      : youtubeUrl.includes('youtu.be/')
-      ? youtubeUrl.replace('youtu.be/', 'www.youtube.com/embed/')
-      : youtubeUrl;
+  const formattedYoutubeUrl = getAdminPreviewUrl(youtubeUrl);
 
+  const projectData = {
+    title,
+    category,
+    aspectRatio,
+    description,
+    imageUrl,
+    youtubeUrl: formattedYoutubeUrl,
+    gallery: galleryArray,
+    createdAt: new Date().toISOString()
+  };
+
+  try {
     if (editingId !== null) {
-      const updatedProjects = projects.map(p => 
-        p.id === editingId 
-          ? {
-              ...p,
-              title,
-              category,
-              aspectRatio,
-              description,
-              imageUrl,
-              youtubeUrl: formattedYoutubeUrl,
-              gallery: galleryArray
-            }
-          : p
-      );
-      saveProjectsToStorage(updatedProjects);
+      setProjects(projects.map(p => p.id === editingId ? { ...p, ...projectData, id: editingId } : p));
       setSuccessMessage('Project successfully updated!');
     } else {
-      const newProject: Project = {
-        id: Date.now().toString(),
-        title,
-        category,
-        aspectRatio,
-        description,
-        imageUrl,
-        youtubeUrl: formattedYoutubeUrl,
-        gallery: galleryArray
-      };
-      saveProjectsToStorage([newProject, ...projects]);
-      setSuccessMessage('Project successfully published to portfolio!');
+      // Add document to Firebase Firestore collection "projects"
+      const docRef = await addDoc(collection(db, "projects"), projectData);
+      const newProject: Project = { id: docRef.id, ...projectData };
+      setProjects([newProject, ...projects]);
+      setSuccessMessage('Project successfully published to Firebase!');
     }
-    
+
     setEditingId(null);
     setTitle('');
     setDescription('');
@@ -214,13 +214,24 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     setYoutubeUrl('');
     setGalleryInput('');
     setError(null);
+    setHasUnsavedChanges(false);
     setTimeout(() => setSuccessMessage(null), 4000);
-  };
+  } catch (err) {
+    console.error("Error saving project to Firebase:", err);
+    setError('Failed to save project to Firebase database.');
+  }
+};
 
-  const handleDeleteProject = (id: string) => {
-    saveProjectsToStorage(projects.filter(p => p.id !== id));
+ const handleDeleteProject = async (id: string) => {
+  try {
+    await deleteDoc(doc(db, "projects", id));
+    setProjects(projects.filter(p => p.id !== id));
     if (editingId === id) handleCancelEdit();
-  };
+  } catch (err) {
+    console.error("Error deleting document from Firebase:", err);
+    setError('Failed to delete project from Firebase.');
+  }
+};
 
   if (isAuthenticated) {
     return (
