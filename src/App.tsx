@@ -240,17 +240,25 @@ const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
     return INITIAL_WORKS;
   });
 
-  // Fetch live projects from cPanel server on load for all visitors
+  // Fetch live projects from Firebase Firestore for all visitors
   useEffect(() => {
-    fetch('https://deephook.am/save-projects.php')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setPortfolioWorks(data);
+    const fetchPublicProjects = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const loadedProjects = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        if (loadedProjects.length > 0) {
+          setPortfolioWorks(loadedProjects);
         }
-      })
-      .catch(err => console.error("Could not load public projects from server", err));
-  }, []);  useEffect(() => {
+      } catch (err) {
+        console.error("Error fetching public projects from Firebase:", err);
+      }
+    };
+    fetchPublicProjects();
+  }, []);
+     useEffect(() => {
     const path = window.location.pathname;
     if (path === '/admin' || path === '/admin/') {
       setIsAdminRoute(true);
