@@ -5,6 +5,26 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import emailjs from '@emailjs/browser';
 import { AdminPortal } from './Admin';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { db } from "./firebase";
+
+const [projects, setProjects] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const projectList = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setProjects(projectList);
+      } catch (error) {
+        console.error("Error loading projects:", error);
+      }
+    }
+    loadProjects();
+  }, []);
 
 const famousSlogans = [
   "Apple: Think different",
