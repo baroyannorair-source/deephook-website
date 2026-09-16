@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { CosmicParallaxBg } from './CosmicParallaxBg';
-import { collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-import { db } from "./firebase";
 
 const getAdminPreviewUrl = (url: string) => {
   if (!url) return '';
@@ -17,6 +14,52 @@ const getAdminPreviewUrl = (url: string) => {
   }
   return url;
 };
+
+function FloatingPathsBackground({ position }: { position: number }) {
+  const paths = Array.from({ length: 24 }, (_, i) => ({
+    id: i,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    width: 0.5 + i * 0.03,
+  }));
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+      <style>{`
+        @keyframes floatPath {
+          0% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+          50% { transform: translateY(-10px) rotate(1deg); opacity: 0.5; }
+          100% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+        }
+        .floating-path {
+          animation: floatPath 15s ease-in-out infinite;
+        }
+      `}</style>
+      <svg
+        style={{ width: '100%', height: '100%', opacity: 0.35 }}
+        viewBox="0 0 696 316"
+        fill="none"
+      >
+        {paths.map((path) => (
+          <path
+            key={path.id}
+            d={path.d}
+            stroke="currentColor"
+            strokeWidth={path.width}
+            strokeOpacity={0.15 + (path.id % 5) * 0.05}
+            className="floating-path"
+            style={{ color: '#71717a', animationDelay: `${path.id * 0.5}s`, animationDuration: `${12 + (path.id % 8)}s` }}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 interface Project {
   id: string;
@@ -40,30 +83,11 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
     return localStorage.getItem('admin_authenticated') === 'true';
   });
 
-  const [activeTab, setActiveTab] = useState<'builder' | 'manage'>(() => {
-    return (localStorage.getItem('admin_activeTab') as 'builder' | 'manage') || 'builder';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('deephook_activeTab', activeTab);
-  }, [activeTab]);
-
-  // Load projects from server when admin opens
-  useEffect(() => {
-    fetch('https://deephook.am/save-projects.php')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProjects(data);
-        }
-      })
-      .catch(err => console.error("Could not load projects from server", err));
-  }, []);
-
+  const [activeTab, setActiveTab] = useState<'builder' | 'manage'>('builder');
   const [activeModal, setActiveModal] = useState<'image' | 'text' | 'grid' | 'video' | null>(null);
 
   const [projects, setProjects] = useState<Project[]>(() => {
-    const saved = localStorage.getItem('deephook portfolio works');
+    const saved = localStorage.getItem('deephook_portfolio_works');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { return []; }
     }
@@ -83,14 +107,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   const saveProjectsToStorage = (updatedProjects: Project[]) => {
     setProjects(updatedProjects);
-    localStorage.setItem('deephook portfolio works', JSON.stringify(updatedProjects));
-    
-    // Save directly to Firebase Firestore live collection
-    try {
-      console.log('Projects updated locally and synced to state!');
-    } catch (err) {
-      console.error('Error saving to Firestore:', err);
-    }
+    localStorage.setItem('deephook_portfolio_works', JSON.stringify(updatedProjects));
   };
 
   const [title, setTitle] = useState('');
@@ -245,8 +262,8 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   if (isAuthenticated) {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: 'transparent', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-        <CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0" />
+      <div style={{ position: 'relative', minHeight: '100vh', height: '100vh', overflow: 'hidden', background: '#0a0a0c', color: '#fff', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+        <FloatingPathsBackground position={1} />
 
         {/* Top Header Navigation Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: '#121216', borderBottom: '1px solid rgba(255,255,255,0.08)', zIndex: 10, flexShrink: 0 }}>
@@ -335,7 +352,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                   </div>
                 </div>
 
-                {/* SCROLLABLE CANVAS CONTAINER FRAME */}
+                {/* SCROLLABLE CANVAS CONTAINER FRAME (Fixed height viewport with custom vertical scrollbar) */}
                 <div style={{ width: '100%', maxWidth: '600px', height: '520px', background: '#141419', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', overflowY: 'auto', padding: '32px 24px', boxShadow: '0 20px 50px rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', gap: '28px', boxSizing: 'border-box', marginBottom: '40px', scrollbarWidth: 'thin', scrollbarColor: '#444 #141419' }}>
                   
                   {/* Title Preview Component */}
@@ -383,7 +400,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                     <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', color: '#777', marginBottom: '8px', letterSpacing: '0.1em' }}>Description & Content Component</span>
                     <div style={{ background: '#0a0a0c', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <p style={{ fontSize: '0.75rem', color: '#ccc', lineHeight: '1.6', margin: '0 0 12px 0', whiteSpace: 'pre-line' }}>
-                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week.'}
+                        {description || 'At Zenoma, we developed a full-scale visual content production project for a silver jewelry brand preparing to showcase its collection at London Fashion Week. The objective was to create high-end, fashion-oriented content that reflects the elegance of the jewelry while aligning with international industry standards.'}
                       </p>
                       {youtubeUrl && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', wordBreak: 'break-all' }}>
@@ -395,10 +412,10 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
                 </div>
 
-                {/* INLINE CANVAS POPUP MODALS */}
+                {/* INLINE CANVAS POPUP MODALS FOR EACH BUTTON */}
                 {activeModal && (
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: activeModal === 'grid' ? '560px' : '480px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+                    <div style={{ background: '#16161c', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '16px', width: '100%', maxWidth: activeModal === 'grid' ? '560px' : '480px', maxH: '90vh', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
                       
                       <button 
                         onClick={() => setActiveModal(null)} 
@@ -450,6 +467,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                           <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#fff' }}>Configure Photo Grid Gallery</h4>
                           <p style={{ fontSize: '0.75rem', color: '#888', margin: '0 0 16px 0' }}>Add individual image links with live thumbnail previews.</p>
                           
+                          {/* Add link section */}
                           <div style={{ background: '#1c1c24', padding: '12px', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.2)', marginBottom: '16px' }}>
                             <label style={{ display: 'block', fontSize: '0.7rem', color: '#ccc', marginBottom: '6px' }}>New Gallery Image URL</label>
                             <div style={{ display: 'flex', gap: '8px' }}>
@@ -470,6 +488,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                             </div>
                           </div>
 
+                          {/* Uploaded items list */}
                           <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px', marginBottom: '16px' }}>
                             <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 500 }}>Attached Links ({galleryArray.length})</span>
                             {galleryArray.length === 0 ? (
@@ -489,7 +508,12 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
                                     style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                                     title="Remove"
                                   >
-                                    ✕
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="3 6 5 6 21 6"></polyline>
+                                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
                                   </button>
                                 </div>
                               ))
@@ -689,7 +713,7 @@ export function AdminPortal({ onReturn }: { onReturn: () => void }) {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: '#0a0a0c', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box', overflow: 'hidden' }}>
-      <CosmicParallaxBg head="Admin Portal" text="Secure, Fast, Dashboard" className="absolute inset-0 -z-10" />
+      <FloatingPathsBackground position={1} />
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
         <span style={{ fontSize: '0.75rem', letterSpacing: '0.25em', color: '#777', textTransform: 'uppercase' }}>DEEPHOOK AGENCY CMS</span>
