@@ -83,9 +83,7 @@ useEffect(() => {
     fetchProjectsFromFirebase();
   }
 }, [isAuthenticated]);
-    ];
-  });
-
+  
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Brand Identity');
   const [aspectRatio, setAspectRatio] = useState<'1:1' | '9:16'>('1:1');
