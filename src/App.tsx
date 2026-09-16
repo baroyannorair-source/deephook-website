@@ -895,7 +895,7 @@ const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
             {portfolioWorks
               .filter((work) => {
                 const matchesTag = selectedTag === 'All' || work.tag === selectedTag;
-                const matchesSearch = work.title.toLowerCase().includes(searchQuery.toLowerCase()) || work.tag.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesSearch = (work.title || '').toLowerCase().includes((searchQuery || '').toLowerCase()) || (work.tag || '').toLowerCase().includes((searchQuery || '').toLowerCase());
                 return matchesTag && matchesSearch;
               })
               .map((work) => {
