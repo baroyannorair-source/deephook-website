@@ -916,7 +916,7 @@ const [portfolioWorks, setPortfolioWorks] = useState<any[]>(() => {
                       }}
                     >
                       <img
-                        src={work.image || work.thumbnail || work.imageUrl || work.cover}
+                       src={work.imageUrl || work.image || work.thumbnail || work.cover}
                         alt={work.title}
                         style={{
                           width: '100%',
