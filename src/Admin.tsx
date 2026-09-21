@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CosmicParallaxBg } from './CosmicParallaxBg';
-import { collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { db } from "./firebase";
 
 const getAdminPreviewUrl = (url: string) => {
@@ -195,8 +195,9 @@ const handleFormSubmit = async (e: React.FormEvent) => {
 
   try {
     if (editingId !== null) {
-      setProjects(projects.map(p => p.id === editingId ? { ...p, ...projectData, id: editingId } : p));
-      setSuccessMessage('Project successfully updated!');
+  await updateDoc(doc(db, "projects", editingId), projectData);
+  setProjects(projects.map(p => p.id === editingId ? { ...p, ...projectData, id: editingId } : p));
+  setSuccessMessage('Project successfully updated!');
     } else {
       // Add document to Firebase Firestore collection "projects"
       const docRef = await addDoc(collection(db, "projects"), projectData);
